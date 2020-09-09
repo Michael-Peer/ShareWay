@@ -182,39 +182,7 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
 
     }
 
-//    I have weird issue with (probably) koin.
-//
-//    I am using a combination of `Flow`(from dao to view model) and `LiveData`(from view model to fragment)
-//
-//    My repository looking like this:
-//
-//    fun getPets(): Flow<Status> = flow {
-//
-//        emit(Status.LOADING)
-//
-//        SystemClock.sleep(5000)
-//
-//        emit(Status.PETS(petsDao.getPets))
-//
-//    }
-//
-//    In my fragment I'm instantiate my view model using `Koin` like this:
-//
-//    private val petsViewModel: PetsViewModelby viewModel()
-//
-//    And observe the data like this:
-//
-//
-//
-//    petsViewModel.status.observe(viewLifecycleOwner, Observer {status ->
-//
-//        if (status == LOADING) {
-//            uiListener.displayProgressBar(true)
-//        } else if(status == PETS) {
-//            //Inflate view
-//        }
-//
-//    })
+
 //
 
 
