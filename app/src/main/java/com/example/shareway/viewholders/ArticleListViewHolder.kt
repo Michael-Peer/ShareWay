@@ -31,6 +31,7 @@ class ArticleListViewHolder(
     }
 
     override fun onClick(v: View?) {
+        Log.d(TAG, "onClick: clicked")
         onArticleClickListener.onArticleClick(adapterPosition)
     }
 

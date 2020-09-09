@@ -18,6 +18,7 @@ import com.example.shareway.listeners.ItemMoveCallbackListener
 import com.example.shareway.listeners.OnCategoryClickListener
 import com.example.shareway.listeners.OnStartDragListener
 import com.example.shareway.listeners.UICommunicationListener
+import com.example.shareway.utils.SpacingItemDecorator
 import com.example.shareway.viewmodels.CategoriesViewModel
 import com.example.shareway.viewstates.CategoriesViewState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -59,9 +60,16 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
         Log.d(TAG, "onResume: ")
     }
 
+    /**
+     *
+     * Because recycler view does not save automatically the order of items, every time the user lives the app I need to save the order of the list.
+     * I created another dao with REPLACE strategy, thar save again the items to the database but with the right order
+     *
+     * **/
     override fun onPause() {
         super.onPause()
         Log.d(TAG, "onPause: ")
+        categoriesViewModel.saveItemsPosition(categoryListRecyclerViewAdapter.currentList)
     }
 
     override fun onStop() {
@@ -96,20 +104,22 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
         observeViewState()
         initRecyclerView()
 
-        val callback : ItemTouchHelper.Callback = ItemMoveCallbackListener(adapter = categoryListRecyclerViewAdapter)
+        val callback: ItemTouchHelper.Callback =
+            ItemMoveCallbackListener(adapter = categoryListRecyclerViewAdapter)
 
         touchHelper = ItemTouchHelper(callback)
         touchHelper.attachToRecyclerView(binding.categoriesRecyclerView)
 
 
-
     }
 
     private fun initRecyclerView() {
+        val x = (resources.displayMetrics.density * 8).toInt() //converting dp to pixels
         activity?.let {
-            gridLayoutManager = GridLayoutManager(it, 3)
+            gridLayoutManager = GridLayoutManager(it, 2)
             categoryListRecyclerViewAdapter = CategoryListAdapter(this, this)
             binding.categoriesRecyclerView.apply {
+                addItemDecoration(SpacingItemDecorator(x))
                 layoutManager = gridLayoutManager
                 adapter = categoryListRecyclerViewAdapter
             }
@@ -150,7 +160,8 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
                 is CategoriesViewState.CategoryList -> {
 //                    uiCommunicationListener.displayProgressBar(false)
                     Log.d(TAG, "CategoriesViewState.CategoryList: ${it.categories.size}")
-                    categoryListRecyclerViewAdapter.submitList(it.categories)
+//                    categoryListRecyclerViewAdapter.submitList(it.categories)
+                    categoryListRecyclerViewAdapter.modifyList(it.categories)
                     Log.d(TAG, "DATA")
 
                 }
@@ -177,14 +188,16 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
         }
     }
 
+    /**
+     *
+     * Activate when we start the dragging process
+     *
+     * **/
     override fun onStartDrag(viewHolder: RecyclerView.ViewHolder) {
+        Log.d(TAG, "onStartDrag: ")
         touchHelper.startDrag(viewHolder)
 
     }
-
-
-//
-
 
 
 }

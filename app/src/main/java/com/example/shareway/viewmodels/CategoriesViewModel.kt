@@ -8,6 +8,7 @@ import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.shareway.models.Category
 import com.example.shareway.repositories.CategoryRepository
 import com.example.shareway.utils.Constants
 import com.example.shareway.viewstates.CategoriesViewState
@@ -68,6 +69,10 @@ class CategoriesViewModel constructor(
         WorkManager
             .getInstance(context)
             .enqueue(workWorker.build())
+    }
+
+    fun saveItemsPosition(items: List<Category>) {
+        categoryRepository.saveItemsPosition(items)
     }
 
 

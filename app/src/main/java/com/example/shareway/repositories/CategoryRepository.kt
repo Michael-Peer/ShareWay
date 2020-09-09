@@ -2,14 +2,13 @@ package com.example.shareway.repositories
 
 import android.util.Log
 import com.example.shareway.models.Article
+import com.example.shareway.models.Category
 import com.example.shareway.persistence.ArticleDao
 import com.example.shareway.persistence.CategoryDao
 import com.example.shareway.utils.UIComponentType
 import com.example.shareway.viewstates.ArticlesViewState
 import com.example.shareway.viewstates.CategoriesViewState
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
@@ -113,7 +112,14 @@ class CategoryRepository(
 
     }.flowOn(Dispatchers.IO)
 
+    fun saveItemsPosition(items: List<Category>) {
+        CoroutineScope(Dispatchers.IO) .launch {
+            for (item in items) {
+                categoryDao.saveItemsPosition(item)
+            }
+        }
 
+    }
 
 
 }

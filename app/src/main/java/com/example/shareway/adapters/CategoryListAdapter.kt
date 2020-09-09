@@ -1,6 +1,7 @@
 package com.example.shareway.adapters
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
@@ -11,7 +12,6 @@ import com.example.shareway.listeners.OnCategoryClickListener
 import com.example.shareway.listeners.OnStartDragListener
 import com.example.shareway.listeners.RowMovesListener
 import com.example.shareway.models.Category
-import com.example.shareway.viewholders.ArticleListViewHolder
 import com.example.shareway.viewholders.CategoryListViewHolder
 import kotlinx.android.synthetic.main.category_list_item.view.*
 import java.util.*
@@ -32,17 +32,47 @@ class CategoryListAdapter(
         return CategoryListViewHolder(view, onCategoryClickListener)
     }
 
-    @SuppressLint("ClickableViewAccessibility")
+    /**
+     *
+     * The problem here was that onCLick event and onDrag event cannot work together.
+     * So initially I checked the MotionEvent(s) to see which event will trigger when.
+     * And I saw that when I click on item I get ACTION_UP & ACTION_DOWN
+     * And when I drag the item I get ACTION_DOWN & ACTION_MOVE.
+     * I thought to call the click listener in ACTION_UP cause it'll be fire only on click, and call the start drag in ACTION_MOVE cause it'll be triggered only when drag.
+     * It DOES WORK.
+     * BUT the problem was the drag detection. around half the times the ON_MOVE didn't detect the drag events.
+     * I read the docs of OnTouchListener and i saw there something interesting - if I return true the event is consumed, if I return false it doesn't.
+     * What this is mean is that if I return false, it move forward to other listeners.
+     * It worked but I was surprised that why when I click it call onDrag and OnClick(as expected), but if I drag it doesn't call the OnClick.
+     * If I return false it should move forward to the next listeners, right?
+     * So yes. it should. but because I'm dragging the item, it detect OnLongClick event and not OnClick.
+     * This is how I solved the problem
+     *
+     * If I needed to detect LongClick? I probably would check if the item is moved or not(relative position to initial position)
+     *
+     * **/
+    @SuppressLint("ClickableViewAccessibility", "LongLogTag")
     override fun onBindViewHolder(holder: CategoryListViewHolder, position: Int) {
         val categoryItem = getItem(position)
         holder.bind(categoryItem)
-
-        holder.itemView.textView.setOnTouchListener { v, event ->
+        holder.itemView.categoryCardView.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 this.startDragListener.onStartDrag(holder)
             }
-            return@setOnTouchListener true
+            return@setOnTouchListener false
         }
+
+//        holder.itemView.container.setOnTouchListener { v, event ->
+//            when (event.action) {
+//                MotionEvent.ACTION_UP -> {
+//                    holder.triggerListner()
+//                }
+//                MotionEvent.ACTION_MOVE -> {
+//                    this.startDragListener.onStartDrag(holder)
+//                }
+//            }
+//            return@setOnTouchListener true
+//        }
     }
 
     fun getCurrentDomainName(position: Int): String? {
@@ -61,6 +91,8 @@ class CategoryListAdapter(
 
 
     companion object {
+        private const val TAG = "CategoryL return@setOnTouchListener truestAdapter"
+
         val DIFF_CALLBACK: DiffUtil.ItemCallback<Category> =
             object : DiffUtil.ItemCallback<Category>() {
                 override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
@@ -101,11 +133,15 @@ class CategoryListAdapter(
 //        submitList(listRef)
     }
 
-    override fun onRowSelected(itemViewHolder: ArticleListViewHolder) {
-        TODO("Not yet implemented")
+    @SuppressLint("LongLogTag")
+    override fun onRowSelected(itemViewHolder: CategoryListViewHolder) {
+        Log.d(TAG, "onRowSelected: ")
     }
 
-    override fun onRowClear(itemViewHolder: ArticleListViewHolder) {
-        TODO("Not yet implemented")
+    @SuppressLint("LongLogTag")
+    override fun onRowClear(itemViewHolder: CategoryListViewHolder) {
+        Log.d(TAG, "onRowClear: ")
     }
+
+
 }

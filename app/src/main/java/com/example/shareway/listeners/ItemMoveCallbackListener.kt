@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.shareway.adapters.CategoryListAdapter
 import com.example.shareway.viewholders.ArticleListViewHolder
+import com.example.shareway.viewholders.CategoryListViewHolder
 
 class ItemMoveCallbackListener(val adapter: CategoryListAdapter) : ItemTouchHelper.Callback() {
 
@@ -41,7 +42,7 @@ class ItemMoveCallbackListener(val adapter: CategoryListAdapter) : ItemTouchHelp
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         super.onSelectedChanged(viewHolder, actionState)
         if (actionState!=ItemTouchHelper.ACTION_STATE_IDLE) {
-            if (viewHolder is ArticleListViewHolder) {
+            if (viewHolder is CategoryListViewHolder) {
                 adapter.onRowSelected(viewHolder)
             }
         }
@@ -49,7 +50,7 @@ class ItemMoveCallbackListener(val adapter: CategoryListAdapter) : ItemTouchHelp
 
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
         super.clearView(recyclerView, viewHolder)
-        if (viewHolder is ArticleListViewHolder) {
+        if (viewHolder is CategoryListViewHolder) {
             adapter.onRowClear(viewHolder)
         }
     }

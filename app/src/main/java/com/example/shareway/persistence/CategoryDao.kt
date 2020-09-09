@@ -13,6 +13,9 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE categoryName = :categoryName")
     fun getCategory(categoryName: String): Flow<Category>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun saveItemsPosition(category: Category)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertCategory(category: Category)
 

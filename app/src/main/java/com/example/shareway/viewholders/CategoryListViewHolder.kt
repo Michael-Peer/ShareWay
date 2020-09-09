@@ -1,6 +1,5 @@
 package com.example.shareway.viewholders
 
-import android.view.MotionEvent
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.example.shareway.databinding.CategoryListItemBinding
@@ -26,8 +25,13 @@ class CategoryListViewHolder(
         }
     }
 
+
     override fun onClick(v: View?) {
         onCategoryClickListener.onCategoryClick(adapterPosition)
+    }
+
+    fun triggerListner() {
+        onClick(itemView)
     }
 
 }
