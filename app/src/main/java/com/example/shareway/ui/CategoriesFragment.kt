@@ -18,6 +18,7 @@ import com.example.shareway.listeners.ItemMoveCallbackListener
 import com.example.shareway.listeners.OnCategoryClickListener
 import com.example.shareway.listeners.OnStartDragListener
 import com.example.shareway.listeners.UICommunicationListener
+import com.example.shareway.utils.SpacingItemDecorator
 import com.example.shareway.viewmodels.CategoriesViewModel
 import com.example.shareway.viewstates.CategoriesViewState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -96,20 +97,21 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
         observeViewState()
         initRecyclerView()
 
-        val callback : ItemTouchHelper.Callback = ItemMoveCallbackListener(adapter = categoryListRecyclerViewAdapter)
+        val callback: ItemTouchHelper.Callback =
+            ItemMoveCallbackListener(adapter = categoryListRecyclerViewAdapter)
 
         touchHelper = ItemTouchHelper(callback)
         touchHelper.attachToRecyclerView(binding.categoriesRecyclerView)
-
 
 
     }
 
     private fun initRecyclerView() {
         activity?.let {
-            gridLayoutManager = GridLayoutManager(it, 3)
+            gridLayoutManager = GridLayoutManager(it, 2)
             categoryListRecyclerViewAdapter = CategoryListAdapter(this, this)
             binding.categoriesRecyclerView.apply {
+                addItemDecoration(SpacingItemDecorator(8))
                 layoutManager = gridLayoutManager
                 adapter = categoryListRecyclerViewAdapter
             }
@@ -150,7 +152,8 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
                 is CategoriesViewState.CategoryList -> {
 //                    uiCommunicationListener.displayProgressBar(false)
                     Log.d(TAG, "CategoriesViewState.CategoryList: ${it.categories.size}")
-                    categoryListRecyclerViewAdapter.submitList(it.categories)
+//                    categoryListRecyclerViewAdapter.submitList(it.categories)
+                    categoryListRecyclerViewAdapter.modifyList(it.categories)
                     Log.d(TAG, "DATA")
 
                 }
@@ -158,15 +161,6 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
         })
     }
 
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        try {
-            uiCommunicationListener = context as UICommunicationListener
-        } catch (e: ClassCastException) {
-            Log.d(TAG, "$context must implement UICommunicationListener")
-        }
-    }
 
     override fun onCategoryClick(position: Int) {
         Log.d(TAG, "onCategoryClick: position: $position")
@@ -182,47 +176,14 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
 
     }
 
-//    I have weird issue with (probably) koin.
-//
-//    I am using a combination of `Flow`(from dao to view model) and `LiveData`(from view model to fragment)
-//
-//    My repository looking like this:
-//
-//    fun getPets(): Flow<Status> = flow {
-//
-//        emit(Status.LOADING)
-//
-//        SystemClock.sleep(5000)
-//
-//        emit(Status.PETS(petsDao.getPets))
-//
-//    }
-//
-//    In my fragment I'm instantiate my view model using `Koin` like this:
-//
-//    private val petsViewModel: PetsViewModelby viewModel()
-//
-//    And observe the data like this:
-//
-//
-//
-//    petsViewModel.status.observe(viewLifecycleOwner, Observer {status ->
-//
-//        if (status == LOADING) {
-//            uiListener.displayProgressBar(true)
-//        } else if(status == PETS) {
-//            //Inflate view
-//        }
-//
-//    })
-//
-//    The problem is when I launch the app I am getting Status.Loading but without any view, without app bar etc etc. like the app is freezing.
-//
-//    and when the status changes to Staus.PETS I am getting the pets data and the view
-//
-//    It's like the view model is too fast and it's calling to repository before I even have a chance to inflate the view(I logged the lifecycle and it does call before onResume)
-//
-//    How can I fix my code?
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        try {
+            uiCommunicationListener = context as UICommunicationListener
+        } catch (e: ClassCastException) {
+            Log.d(TAG, "$context must implement UICommunicationListener")
+        }
+    }
 
 
 }

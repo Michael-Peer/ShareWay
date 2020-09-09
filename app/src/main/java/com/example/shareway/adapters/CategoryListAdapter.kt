@@ -1,5 +1,6 @@
 package com.example.shareway.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
@@ -15,10 +16,13 @@ import com.example.shareway.viewholders.CategoryListViewHolder
 import kotlinx.android.synthetic.main.category_list_item.view.*
 import java.util.*
 
-class CategoryListAdapter(private val onCategoryClickListener: OnCategoryClickListener,
-                          private val startDragListener: OnStartDragListener
+class CategoryListAdapter(
+    private val onCategoryClickListener: OnCategoryClickListener,
+    private val startDragListener: OnStartDragListener
 ) :
     ListAdapter<Category, CategoryListViewHolder>(DIFF_CALLBACK), RowMovesListener {
+
+    private var mutableCopyList: List<Category> = ArrayList()
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryListViewHolder {
@@ -28,6 +32,7 @@ class CategoryListAdapter(private val onCategoryClickListener: OnCategoryClickLi
         return CategoryListViewHolder(view, onCategoryClickListener)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(holder: CategoryListViewHolder, position: Int) {
         val categoryItem = getItem(position)
         holder.bind(categoryItem)
@@ -49,6 +54,11 @@ class CategoryListAdapter(private val onCategoryClickListener: OnCategoryClickLi
         }
     }
 
+    fun modifyList(list: List<Category>) {
+        mutableCopyList = list
+        submitList(list)
+    }
+
 
     companion object {
         val DIFF_CALLBACK: DiffUtil.ItemCallback<Category> =
@@ -66,20 +76,29 @@ class CategoryListAdapter(private val onCategoryClickListener: OnCategoryClickLi
 
     /**
      *
-     * To solve this question, maybe create a ref list, make it mutahble
+     * Initially, I wrote  Collections.swap(currentList, i, i + 1) and I got a crash.
+     * the prboem was the "currentList" that came from diff util is a "regular" list and not mutable list.
+     * what I did to solve this problem is instead of submitting the list with direct submitList I creared a function called modifyList.
+     * modifyList first save the list to mutableList and only then call submit liste
+     * And inside onRowMoved I swapped the ref list, not the original one.
+     *
      *
      * **/
     override fun onRowMoved(fromPosition: Int, toPosition: Int) {
         if (fromPosition < toPosition) {
             for (i in fromPosition until toPosition) {
-                Collections.swap(currentList, i, i + 1)
+//                Collections.swap(currentList, i, i + 1)
+                Collections.swap(mutableCopyList, i, i + 1)
+
             }
         } else {
             for (i in fromPosition downTo toPosition + 1) {
-                Collections.swap(currentList, i, i - 1)
+//                Collections.swap(currentList, i, i - 1)
+                Collections.swap(mutableCopyList, i, i - 1)
             }
         }
-//        notifyItemMoved(fromPosition, toPosition)
+        notifyItemMoved(fromPosition, toPosition)
+//        submitList(listRef)
     }
 
     override fun onRowSelected(itemViewHolder: ArticleListViewHolder) {
