@@ -77,7 +77,7 @@ class CategoryListAdapter(
     /**
      *
      * Initially, I wrote  Collections.swap(currentList, i, i + 1) and I got a crash.
-     * the prboem was the "currentList" that came from diff util is a "regular" list and not mutable list.
+     * the problem was the "currentList" that came from diff util is a "regular" list and not mutable list.
      * what I did to solve this problem is instead of submitting the list with direct submitList I creared a function called modifyList.
      * modifyList first save the list to mutableList and only then call submit liste
      * And inside onRowMoved I swapped the ref list, not the original one.
