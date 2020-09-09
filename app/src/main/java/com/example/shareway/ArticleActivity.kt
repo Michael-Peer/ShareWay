@@ -4,11 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.example.shareway.viewmodels.ArticleViewModel
+import com.example.shareway.viewmodels.CategoriesViewModel
 import kotlinx.android.synthetic.main.activity_job.*
 import kotlinx.coroutines.*
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class ArticleActivity : AppCompatActivity() {
 
@@ -17,7 +17,7 @@ class ArticleActivity : AppCompatActivity() {
         private const val TAG = "ArticleActivity"
     }
 
-    private val articleViewModel: ArticleViewModel by viewModels()
+    private val categoriesViewModel: CategoriesViewModel by viewModel()
 
     private var url: String? = null
 
@@ -28,6 +28,8 @@ class ArticleActivity : AppCompatActivity() {
 
         getIntentFromUser()
     }
+
+
 
     private fun getIntentFromUser() {
         intent?.let { intent: Intent ->
@@ -44,7 +46,7 @@ class ArticleActivity : AppCompatActivity() {
             Log.d(TAG, "onCreate: in io")
             handleUrlFromIntent(intent)
             Log.d(TAG, "onCreate: after handle text")
-            delay(5000)
+            delay(2000)
             Log.d(TAG, "onCreate: after delay")
             withContext(Dispatchers.Main) {
 
@@ -53,7 +55,7 @@ class ArticleActivity : AppCompatActivity() {
 //                WorkOnArticleService.enqueueWork(this@JobActivity, serviceIntent)
 
                 url?.let { url ->
-                    articleViewModel.manipulateArticleUrl(url)
+                    categoriesViewModel.manipulateArticleUrl(url)
                 }
 
                 progressBar.visibility = View.GONE
