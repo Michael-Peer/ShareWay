@@ -216,13 +216,7 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
 //
 //    })
 //
-//    The problem is when I launch the app I am getting Status.Loading but without any view, without app bar etc etc. like the app is freezing.
-//
-//    and when the status changes to Staus.PETS I am getting the pets data and the view
-//
-//    It's like the view model is too fast and it's calling to repository before I even have a chance to inflate the view(I logged the lifecycle and it does call before onResume)
-//
-//    How can I fix my code?
+
 
 
 }
