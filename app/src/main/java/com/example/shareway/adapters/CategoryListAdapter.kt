@@ -78,7 +78,15 @@ class CategoryListAdapter(
     fun getCurrentDomainName(position: Int): String? {
         return if (currentList.isNotEmpty()) {
             val item = getItem(position)
-            item.categoryName
+            item.originalCategoryName
+        } else {
+            null
+        }
+    }
+
+    fun getCurrentCategory(position: Int): Category? {
+        return if (!currentList.isNullOrEmpty()) {
+            getItem(position)
         } else {
             null
         }
@@ -96,7 +104,7 @@ class CategoryListAdapter(
         val DIFF_CALLBACK: DiffUtil.ItemCallback<Category> =
             object : DiffUtil.ItemCallback<Category>() {
                 override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
-                    return oldItem.categoryName == newItem.categoryName
+                    return oldItem.originalCategoryName == newItem.originalCategoryName
                 }
 
                 override fun areContentsTheSame(oldItem: Category, newItem: Category): Boolean {

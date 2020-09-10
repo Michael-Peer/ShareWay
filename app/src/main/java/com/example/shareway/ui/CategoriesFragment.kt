@@ -3,15 +3,14 @@ package com.example.shareway.ui
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.example.shareway.R
 import com.example.shareway.adapters.CategoryListAdapter
 import com.example.shareway.databinding.FragmentCategoriesBinding
 import com.example.shareway.listeners.ItemMoveCallbackListener
@@ -47,6 +46,7 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate: ")
+        setHasOptionsMenu(true)
 
     }
 
@@ -188,6 +188,18 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
         }
     }
 
+    override fun onTextClick(position: Int) {
+//        binding.tex
+    }
+
+    override fun onCheckIconClick(newCategoryName: String, position: Int) {
+
+        val category = categoryListRecyclerViewAdapter.getCurrentCategory(position)
+        category?.let {
+            categoriesViewModel.saveNewCategoryName(newCategoryName, it)
+        }
+    }
+
     /**
      *
      * Activate when we start the dragging process
@@ -197,6 +209,28 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
         Log.d(TAG, "onStartDrag: ")
         touchHelper.startDrag(viewHolder)
 
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.category_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        when(item.itemId) {
+            R.id.name -> {
+                item.isChecked = true
+                categoriesViewModel.getCategoriesByName()
+                return true
+            }
+            R.id.date -> {
+                item.isChecked = true
+                return true
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
 

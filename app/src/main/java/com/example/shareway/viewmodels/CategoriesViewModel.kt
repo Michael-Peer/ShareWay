@@ -1,6 +1,7 @@
 package com.example.shareway.viewmodels
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
@@ -20,6 +21,10 @@ class CategoriesViewModel constructor(
     private val categoryRepository: CategoryRepository,
     private val context: Context
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "CategoriesViewModel"
+    }
 
 //    val _articles: MutableLiveData<List<Article>> = articleRepository.getAllArticles().asLiveData()\
 
@@ -73,6 +78,18 @@ class CategoriesViewModel constructor(
 
     fun saveItemsPosition(items: List<Category>) {
         categoryRepository.saveItemsPosition(items)
+    }
+
+    fun saveNewCategoryName(
+        newCategoryName: String,
+        currentCategory: Category
+    ) {
+        categoryRepository.saveNewCategoryName(newCategoryName, currentCategory)
+    }
+
+    fun getCategoriesByName() {
+        Log.d(TAG, "getCategoriesByName: ")
+//        categoryRepository.getCatergoriesByName()
     }
 
 

@@ -6,7 +6,6 @@ import com.example.shareway.models.Category
 import com.example.shareway.persistence.ArticleDao
 import com.example.shareway.persistence.CategoryDao
 import com.example.shareway.utils.UIComponentType
-import com.example.shareway.viewstates.ArticlesViewState
 import com.example.shareway.viewstates.CategoriesViewState
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
@@ -67,6 +66,7 @@ class CategoryRepository(
                 )
             }
         } catch (e: Exception) {
+            Log.d(TAG, "getAllCategories: $e")
             emit(
                 CategoriesViewState.Error(
                     errorMessage = "Unknown Error",
@@ -113,13 +113,47 @@ class CategoryRepository(
     }.flowOn(Dispatchers.IO)
 
     fun saveItemsPosition(items: List<Category>) {
-        CoroutineScope(Dispatchers.IO) .launch {
+        CoroutineScope(Dispatchers.IO).launch {
             for (item in items) {
                 categoryDao.saveItemsPosition(item)
             }
         }
 
     }
+
+    fun saveNewCategoryName(newCategoryName: String, currentCategory: Category) {
+        currentCategory.newCategoryName = newCategoryName
+        CoroutineScope(Dispatchers.IO).launch {
+            categoryDao.insertCategory(category = currentCategory)
+        }
+    }
+
+//    fun getCatergoriesByName() = flow {
+//        Log.d(TAG, "articleDao hascode: ${articleDao.hashCode()}")
+//        Log.d(TAG, "categoryDao hashcode: ${categoryDao.hashCode()}")
+//
+//        emit(CategoriesViewState.Loading)
+//
+//        delay(4000)
+//
+//        try {
+//            categoryDao.getAllCategories().collect {
+//                emit(
+//                    CategoriesViewState.CategoryList(
+//                        categories = it
+//                    )
+//                )
+//            }
+//        } catch (e: Exception) {
+//            Log.d(TAG, "getAllCategories: $e")
+//            emit(
+//                CategoriesViewState.Error(
+//                    errorMessage = "Unknown Error",
+//                    messageType = UIComponentType.Toast
+//                )
+//            )
+//        }
+//    }
 
 
 }

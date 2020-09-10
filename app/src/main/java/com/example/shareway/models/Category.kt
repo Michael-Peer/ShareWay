@@ -6,5 +6,6 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "categories")
 data class Category(
     @PrimaryKey
-    val categoryName: String
+    val originalCategoryName: String,
+    var newCategoryName: String? = ""
 )

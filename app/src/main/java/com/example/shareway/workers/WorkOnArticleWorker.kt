@@ -75,13 +75,23 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
         }
     }
 
+//    private suspend fun checkCategoriesAndInsert(domainName: String) {
+//        categoryDao.insertCategory(
+//            Category(
+//                categoryName = domainName
+//            )
+//        )
+//    }
+
     private suspend fun checkCategoriesAndInsert(domainName: String) {
         categoryDao.insertCategory(
             Category(
-                categoryName = domainName
+                originalCategoryName = domainName
             )
         )
     }
+
+
 
     private suspend fun insertToDB(url: String, domainName: String) {
         articleDao.insertArticle(
