@@ -26,7 +26,8 @@ class CategoryListViewHolder(
     fun bind(categoryItem: Category?) {
         var hasNewName = false
         categoryItem?.let {
-            if (it.newCategoryName != "") {
+//            if (it.newCategoryName != "") {
+            if (it.newCategoryName != it.originalCategoryName) {
                 hasNewName = true
             }
             binding.apply {

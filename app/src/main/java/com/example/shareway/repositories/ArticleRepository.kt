@@ -1,13 +1,11 @@
 package com.example.shareway.repositories
 
 import android.util.Log
+import com.example.shareway.models.Article
 import com.example.shareway.persistence.ArticleDao
 import com.example.shareway.utils.UIComponentType
 import com.example.shareway.viewstates.ArticlesViewState
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
@@ -49,4 +47,10 @@ class ArticleRepository(
         }
 
     }.flowOn(Dispatchers.IO)
+
+    fun insertArticle(article: Article) {
+        CoroutineScope(Dispatchers.IO).launch {
+            articleDao.insertArticle(article)
+        }
+    }
 }

@@ -56,9 +56,5 @@
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
-
     </com.google.android.material.card.MaterialCardView>
 </androidx.appcompat.widget.LinearLayoutCompat>

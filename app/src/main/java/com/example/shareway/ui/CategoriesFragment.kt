@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -104,6 +105,7 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
         observeViewState()
         initRecyclerView()
 
+        //TODO: Move to function
         val callback: ItemTouchHelper.Callback =
             ItemMoveCallbackListener(adapter = categoryListRecyclerViewAdapter)
 
@@ -113,6 +115,11 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
 
     }
 
+    /**
+     *
+     * Set recycler view & recycler view params
+     *
+     * **/
     private fun initRecyclerView() {
         val x = (resources.displayMetrics.density * 8).toInt() //converting dp to pixels
         activity?.let {
@@ -129,13 +136,6 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
 
     @ExperimentalCoroutinesApi
     private fun observeViewState() {
-        //        articleViewModel.articles.observe(viewLifecycleOwner, Observer {
-//            Log.d(TAG, "Articles Size: ${it.size}")
-//        })
-
-//        articleViewModel.categories.observe(viewLifecycleOwner, Observer {
-//            Log.d(TAG, "Categories Size: ${it.size}")
-//        })
 
         categoriesViewModel.viewState.observe(viewLifecycleOwner, Observer {
 
@@ -192,6 +192,12 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
 //        binding.tex
     }
 
+    /**
+     *
+     * In edit mode we've check icon to indicate when user done editing.
+     * TODO: check icon on keyboard
+     *
+     * **/
     override fun onCheckIconClick(newCategoryName: String, position: Int) {
 
         val category = categoryListRecyclerViewAdapter.getCurrentCategory(position)
@@ -214,11 +220,38 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.category_menu, menu)
+
+        val menuItem = menu.findItem(R.id.filter_menu_search)
+        val searchView = menuItem.actionView as SearchView
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                Log.i(TAG, "onQueryTextChange: " + newText);
+
+                /**
+                 *
+                 * Send the search input to the filter function inside the adapter
+                 *
+                 * **/
+                categoryListRecyclerViewAdapter.filter(newText);
+                return false; }
+        })
     }
 
+
+    /**
+     *
+     * Select which order to show
+     * name -> Order categories by name
+     * date -> Order categories by date
+     * **/
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.name -> {
                 item.isChecked = true
                 categoriesViewModel.getCategoriesByName()

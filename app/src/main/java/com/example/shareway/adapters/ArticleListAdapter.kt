@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import com.example.shareway.adapters.ArticleListAdapter.Companion.DIFF_CALLBACK
 import com.example.shareway.databinding.ArticleListItemBinding
 import com.example.shareway.listeners.OnArticleClickListener
 import com.example.shareway.models.Article
@@ -13,7 +12,6 @@ import com.example.shareway.viewholders.ArticleListViewHolder
 
 class ArticleListAdapter(private val onArticleClickListener: OnArticleClickListener) :
     ListAdapter<Article, ArticleListViewHolder>(DIFF_CALLBACK) {
-
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArticleListViewHolder {
@@ -40,6 +38,15 @@ class ArticleListAdapter(private val onArticleClickListener: OnArticleClickListe
         }
     }
 
+    fun getCurrentArticle(position: Int): Article? {
+        return if (!currentList.isNullOrEmpty()) {
+            getItem(position)
+        } else {
+            null
+        }
+    }
+
+
     companion object {
 
         private const val TAG = "ArticleListAdapter"
@@ -47,11 +54,11 @@ class ArticleListAdapter(private val onArticleClickListener: OnArticleClickListe
         val DIFF_CALLBACK: DiffUtil.ItemCallback<Article> =
             object : DiffUtil.ItemCallback<Article>() {
                 override fun areItemsTheSame(oldItem: Article, newItem: Article): Boolean {
-                  return  oldItem.url == newItem.url
+                    return oldItem.url == newItem.url
                 }
 
                 override fun areContentsTheSame(oldItem: Article, newItem: Article): Boolean {
-                    return   oldItem == newItem
+                    return oldItem == newItem
                 }
 
             }

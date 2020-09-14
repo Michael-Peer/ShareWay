@@ -10,7 +10,7 @@ import com.example.shareway.models.Category
 
 private const val DB_NAME = "articles.db"
 
-@Database(entities = [Article::class, Category::class], version = 4)
+@Database(entities = [Article::class, Category::class], version = 6)
 abstract class ArticleDatabase : RoomDatabase() {
 
     abstract fun articleDao(): ArticleDao

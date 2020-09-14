@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import com.example.shareway.models.Article
 import com.example.shareway.repositories.ArticleRepository
 import com.example.shareway.viewstates.ArticlesViewState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,6 +28,10 @@ class ArticlesViewModel(
             _viewState.postValue(it)
         }
 
+    }
+
+    fun insertArticle(article : Article) {
+        articleRepository.insertArticle(article)
     }
 
 }

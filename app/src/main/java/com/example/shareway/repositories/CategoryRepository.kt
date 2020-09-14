@@ -112,6 +112,11 @@ class CategoryRepository(
 
     }.flowOn(Dispatchers.IO)
 
+    /**
+     *
+     * TODO: Inject with koin appScope
+     *
+     * **/
     fun saveItemsPosition(items: List<Category>) {
         CoroutineScope(Dispatchers.IO).launch {
             for (item in items) {
@@ -127,33 +132,4 @@ class CategoryRepository(
             categoryDao.insertCategory(category = currentCategory)
         }
     }
-
-//    fun getCatergoriesByName() = flow {
-//        Log.d(TAG, "articleDao hascode: ${articleDao.hashCode()}")
-//        Log.d(TAG, "categoryDao hashcode: ${categoryDao.hashCode()}")
-//
-//        emit(CategoriesViewState.Loading)
-//
-//        delay(4000)
-//
-//        try {
-//            categoryDao.getAllCategories().collect {
-//                emit(
-//                    CategoriesViewState.CategoryList(
-//                        categories = it
-//                    )
-//                )
-//            }
-//        } catch (e: Exception) {
-//            Log.d(TAG, "getAllCategories: $e")
-//            emit(
-//                CategoriesViewState.Error(
-//                    errorMessage = "Unknown Error",
-//                    messageType = UIComponentType.Toast
-//                )
-//            )
-//        }
-//    }
-
-
 }

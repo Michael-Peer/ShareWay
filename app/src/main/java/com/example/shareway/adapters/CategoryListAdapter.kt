@@ -15,6 +15,7 @@ import com.example.shareway.models.Category
 import com.example.shareway.viewholders.CategoryListViewHolder
 import kotlinx.android.synthetic.main.category_list_item.view.*
 import java.util.*
+import kotlin.collections.ArrayList
 
 class CategoryListAdapter(
     private val onCategoryClickListener: OnCategoryClickListener,
@@ -97,20 +98,20 @@ class CategoryListAdapter(
         submitList(list)
     }
 
+    fun filter(query: String?) {
+        val filteredList = ArrayList<Category>()
 
-    companion object {
-        private const val TAG = "CategoryL return@setOnTouchListener truestAdapter"
+        if (!query.isNullOrEmpty()) {
+            filteredList.addAll(mutableCopyList.filter { category: Category ->
+                category.newCategoryName.toLowerCase()
+                    .contains(query.toString().toLowerCase().trim())
+            })
+        } else {
+            filteredList.addAll(mutableCopyList)
+        }
 
-        val DIFF_CALLBACK: DiffUtil.ItemCallback<Category> =
-            object : DiffUtil.ItemCallback<Category>() {
-                override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
-                    return oldItem.originalCategoryName == newItem.originalCategoryName
-                }
-
-                override fun areContentsTheSame(oldItem: Category, newItem: Category): Boolean {
-                    return oldItem == newItem
-                }
-            }
+        //TODO: disable drag while filter || save to data base when drag not when pause
+        submitList(filteredList)
     }
 
 
@@ -149,6 +150,21 @@ class CategoryListAdapter(
     @SuppressLint("LongLogTag")
     override fun onRowClear(itemViewHolder: CategoryListViewHolder) {
         Log.d(TAG, "onRowClear: ")
+    }
+
+    companion object {
+        private const val TAG = "CategoryL return@setOnTouchListener truestAdapter"
+
+        val DIFF_CALLBACK: DiffUtil.ItemCallback<Category> =
+            object : DiffUtil.ItemCallback<Category>() {
+                override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
+                    return oldItem.originalCategoryName == newItem.originalCategoryName
+                }
+
+                override fun areContentsTheSame(oldItem: Category, newItem: Category): Boolean {
+                    return oldItem == newItem
+                }
+            }
     }
 
 

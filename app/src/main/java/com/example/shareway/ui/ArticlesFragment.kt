@@ -131,4 +131,14 @@ class ArticlesFragment : Fragment(), OnArticleClickListener {
             findNavController().navigate(action)
         }
     }
+
+    override fun onLongArticleClick(position: Int) {
+        val article = articleListRecyclerViewAdapter.getCurrentArticle(position)
+
+        article?.let { it ->
+            it.alreadyRead = !(it.alreadyRead)
+            articlesViewModel.insertArticle(it)
+
+        }
+    }
 }
