@@ -24,4 +24,12 @@ data class Category(
      * **/
 //    var newCategoryName: String? = ""
     var newCategoryName: String = originalCategoryName
+
+    /**
+     *
+     * Start with 1, cause when new category is created there is already 1 article
+     *
+     * **/
+//    var numberOfArticles: Int = 1
 )
+

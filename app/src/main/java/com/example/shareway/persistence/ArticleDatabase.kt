@@ -4,13 +4,16 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.example.shareway.models.Article
 import com.example.shareway.models.Category
+import com.example.shareway.utils.converters.Converters
 
 
 private const val DB_NAME = "articles.db"
 
-@Database(entities = [Article::class, Category::class], version = 6)
+@Database(entities = [Article::class, Category::class], version = 9)
+@TypeConverters(Converters::class)
 abstract class ArticleDatabase : RoomDatabase() {
 
     abstract fun articleDao(): ArticleDao

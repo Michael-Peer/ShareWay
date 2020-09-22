@@ -21,7 +21,7 @@
             >
 
             <TextView
-                android:id="@+id/textView"
+                android:id="@+id/categoryNameText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -32,7 +32,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <EditText
-                android:id="@+id/editTextTextPersonName"
+                android:id="@+id/categoryNameEditText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -40,11 +40,12 @@
                 android:inputType="textVisiblePassword"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+                android:minEms="6"
                 android:visibility="gone"
                 android:autofillHints="edit" />
 
             <ImageView
-                android:id="@+id/imageView"
+                android:id="@+id/acceptEditIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"

@@ -19,11 +19,16 @@ class CategoryListViewHolder(
 
     init {
         binding.root.setOnClickListener(this)
-        binding.textView.setOnClickListener(this)
-        binding.imageView.setOnClickListener(this)
+        binding.categoryNameText.setOnClickListener(this)
+        binding.acceptEditIcon.setOnClickListener(this)
     }
 
     fun bind(categoryItem: Category?) {
+
+//        if (categoryItem != null) {
+//            Log.d(TAG, "bind: Number of articles ${categoryItem.numberOfArticles}")
+//            binding.tempArticleNum.text = categoryItem.numberOfArticles.toString()
+//        }
         var hasNewName = false
         categoryItem?.let {
 //            if (it.newCategoryName != "") {
@@ -31,7 +36,7 @@ class CategoryListViewHolder(
                 hasNewName = true
             }
             binding.apply {
-                textView.text =
+                categoryNameText.text =
                     if (!hasNewName) categoryItem.originalCategoryName else categoryItem.newCategoryName
 
             }
@@ -46,12 +51,12 @@ class CategoryListViewHolder(
                 onCategoryClickListener.onCategoryClick(adapterPosition)
             }
 
-            binding.textView -> {
+            binding.categoryNameText -> {
                 Log.d(TAG, "onClick:  binding.textView")
                 replaceToEditMode()
             }
 
-            binding.imageView -> {
+            binding.acceptEditIcon -> {
                 saveEdit()
             }
         }
@@ -59,23 +64,23 @@ class CategoryListViewHolder(
 
 
     private fun replaceToEditMode() {
-        val currentText = binding.textView.text
+        val currentText = binding.categoryNameText.text
         if (currentText.isNotEmpty()) {
-            binding.textView.visibility = View.GONE
-            binding.editTextTextPersonName.setText(currentText)
-            binding.editTextTextPersonName.visibility = View.VISIBLE
-            binding.imageView.visibility = View.VISIBLE
+            binding.categoryNameText.visibility = View.GONE
+            binding.categoryNameEditText.setText(currentText)
+            binding.categoryNameEditText.visibility = View.VISIBLE
+            binding.acceptEditIcon.visibility = View.VISIBLE
         }
     }
 
     private fun saveEdit() {
-        if (binding.textView.text != binding.editTextTextPersonName.text) {
-            binding.editTextTextPersonName.visibility = View.GONE
-            binding.imageView.visibility = View.GONE
-            binding.textView.text = binding.editTextTextPersonName.text
-            binding.textView.visibility = View.VISIBLE
+        if (binding.categoryNameText.text != binding.categoryNameEditText.text && binding.categoryNameEditText.text.isNotEmpty()) {
+            binding.categoryNameEditText.visibility = View.GONE
+            binding.acceptEditIcon.visibility = View.GONE
+            binding.categoryNameText.text = binding.categoryNameEditText.text
+            binding.categoryNameText.visibility = View.VISIBLE
             onCategoryClickListener.onCheckIconClick(
-                binding.textView.text.toString(),
+                binding.categoryNameText.text.toString(),
                 adapterPosition
             )
 

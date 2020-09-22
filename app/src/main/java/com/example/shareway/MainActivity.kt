@@ -5,6 +5,8 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -12,7 +14,11 @@ import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.shareway.databinding.ActivityMainBinding
 import com.example.shareway.listeners.UICommunicationListener
+import com.example.shareway.ui.ArticlesFragment
 import com.example.shareway.utils.UIComponentType
+import com.example.shareway.utils.extensions.currentNavigationFragment
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.InternalCoroutinesApi
 
 
 class MainActivity : AppCompatActivity(), UICommunicationListener {
@@ -94,6 +100,19 @@ class MainActivity : AppCompatActivity(), UICommunicationListener {
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "onDestroy: ")
+    }
+
+    @ExperimentalCoroutinesApi
+    @InternalCoroutinesApi
+    override fun onBackPressed() {
+        super.onBackPressed()
+        val currentFragment = supportFragmentManager.currentNavigationFragment
+
+        when (currentFragment) {
+            is ArticlesFragment -> {
+                currentFragment.onBackButtonPressed()
+            }
+        }
     }
 
 

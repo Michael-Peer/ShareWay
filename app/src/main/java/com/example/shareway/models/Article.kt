@@ -1,7 +1,10 @@
 package com.example.shareway.models
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.time.Instant
 
 /**
  * \
@@ -12,10 +15,11 @@ import androidx.room.PrimaryKey
  * **/
 
 @Entity(tableName = "articles")
-data class Article(
+data class Article constructor(
     @PrimaryKey
     val url: String,
     val domainName: String,
-    var alreadyRead: Boolean = false
+    var alreadyRead: Boolean = false,
+    val dateAdded: Instant = Instant.now()
 ) {
 }

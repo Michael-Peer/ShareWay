@@ -3,19 +3,20 @@ package com.example.shareway.ui
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.shareway.R
 import com.example.shareway.adapters.ArticleListAdapter
 import com.example.shareway.databinding.FragmentArticlesBinding
 import com.example.shareway.listeners.OnArticleClickListener
 import com.example.shareway.listeners.UICommunicationListener
+import com.example.shareway.models.Article
+import com.example.shareway.utils.FilterMode
 import com.example.shareway.viewmodels.ArticlesViewModel
 import com.example.shareway.viewstates.ArticlesViewState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,8 +34,9 @@ class ArticlesFragment : Fragment(), OnArticleClickListener {
 
     private lateinit var uiCommunicationListener: UICommunicationListener
     private lateinit var binding: FragmentArticlesBinding
-    private lateinit var gridLayoutManager: GridLayoutManager
     private lateinit var articleListRecyclerViewAdapter: ArticleListAdapter
+
+    private lateinit var linearLayoutManager: LinearLayoutManager
 
     private val articlesViewModel: ArticlesViewModel by viewModel()
     private val args: ArticlesFragmentArgs by navArgs()
@@ -43,6 +45,7 @@ class ArticlesFragment : Fragment(), OnArticleClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate: ")
         super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
 
     }
 
@@ -103,10 +106,13 @@ class ArticlesFragment : Fragment(), OnArticleClickListener {
     private fun initRecyclerView() {
         Log.d(TAG, "initRecyclerView: ")
         activity?.let {
-            gridLayoutManager = GridLayoutManager(it, 3)
+//            gridLayoutManager = GridLayoutManager(it, 3)
+            linearLayoutManager = LinearLayoutManager(it)
             articleListRecyclerViewAdapter = ArticleListAdapter(this)
             binding.articlesRecyclerView.apply {
-                layoutManager = gridLayoutManager
+//                layoutManager = gridLayoutManager
+                layoutManager = linearLayoutManager
+
                 adapter = articleListRecyclerViewAdapter
             }
 
@@ -124,8 +130,8 @@ class ArticlesFragment : Fragment(), OnArticleClickListener {
 
     override fun onArticleClick(position: Int) {
         Log.d(TAG, "onCategoryClick: position: $position")
-        val articlURL = articleListRecyclerViewAdapter.getCurrentURL(position)
-        articlURL?.let {
+        val articleURL = articleListRecyclerViewAdapter.getCurrentURL(position)
+        articleURL?.let {
             val action =
                 ArticlesFragmentDirections.actionArticlesFragmentToArticleDetailFragment(it)
             findNavController().navigate(action)
@@ -135,10 +141,90 @@ class ArticlesFragment : Fragment(), OnArticleClickListener {
     override fun onLongArticleClick(position: Int) {
         val article = articleListRecyclerViewAdapter.getCurrentArticle(position)
 
-        article?.let { it ->
-            it.alreadyRead = !(it.alreadyRead)
-            articlesViewModel.insertArticle(it)
 
+        article?.let { it ->
+//            val alreadyRead = !(it.alreadyRead)
+//            it.alreadyRead = !(it.alreadyRead)
+//            articlesViewModel.insertArticle(it)
+            articlesViewModel.updateAlreadyRead(it.url)
         }
     }
+
+    override fun onEnterMultiSelectionMode(articleListAdapter: ArticleListAdapter) {
+        activity?.startActionMode(articleListAdapter)
+    }
+
+    /**
+     *
+     * Here was an interesting case.
+     * In the adapter I'm calling [onArticleClickListener.onDeleteMultipleArticles(selectedItems)] after I click on delete in selection mode, which lead me to this function.
+     * Here I just send the list to the repository through the view model, and in the repo I jest launch a coroutine scope in order to make DB call.
+     * THE PROBLEM WAS When I entered into the coroutine scope, suddenly the list become empty.
+     * The cause to that was that after I call [onArticleClickListener.onDeleteMultipleArticles(selectedItems)] I'm calling also [mode?.finish()], which reset my list.
+     *
+     * When I launched the coroutine, the function returned immediately(because the async nature of coroutines of course), and [mode?.finish()] and my list was reset.
+     * Which lead to empty list because before the coroutine handled the list, [mode?.finish()] called.
+     *
+     * The fix was relatively easy - make a copy of the list
+     *
+     *
+     * **/
+    override fun onDeleteMultipleArticles(articles: List<Article>) {
+        if (articles.isNotEmpty()) {
+            val copyList = articles.toList()
+            articlesViewModel.deleteArticles(copyList)
+        }
+    }
+
+    override fun onMarkAsReadMultipleArticles(articles: List<Article>) {
+
+        articlesViewModel.updateMultipleMarkAsRead(articles)
+    }
+
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.article_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        when (item.itemId) {
+            R.id.filter_all -> {
+                item.isChecked = true
+                lifecycleScope.launch {
+                    articlesViewModel.getArticles(args.domainName)
+                }
+                return true
+            }
+            R.id.filter_already_read -> {
+                item.isChecked = true
+                lifecycleScope.launch {
+                    articlesViewModel.getArticles(args.domainName, FilterMode.ALREADY_READ)
+                }
+                return true
+            }
+            R.id.filter_no_read -> {
+                item.isChecked = true
+                lifecycleScope.launch {
+                    articlesViewModel.getArticles(args.domainName, FilterMode.NOT_READ)
+                }
+                return true
+            }
+            R.id.order_by_name -> {
+                item.isChecked = true
+                return true
+            }
+            R.id.order_by_date -> {
+                item.isChecked = true
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    fun onBackButtonPressed() {
+        articleListRecyclerViewAdapter.clearSelection()
+    }
+
 }

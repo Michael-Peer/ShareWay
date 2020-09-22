@@ -22,6 +22,8 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
     private val articleDao: ArticleDao by inject()
     private val categoryDao: CategoryDao by inject()
 
+    private var isOldCategory = false
+
     companion object {
         private const val TAG = "WorkOnArticleWorker"
     }
@@ -38,12 +40,11 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
             try {
 
 
-                fakeDelay(it, url)
+//                fakeDelay(it, url)
                 checkCategoriesAndInsert(it)
                 insertToDB(url, it)
                 Log.d(TAG, "articleDao hash code: ${articleDao.hashCode()}")
                 Log.d(TAG, "categoryDao hash code: ${categoryDao.hashCode()}")
-
 
 
                 val outputData = Data.Builder()
@@ -84,22 +85,52 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
 //    }
 
     private suspend fun checkCategoriesAndInsert(domainName: String) {
+//        val insertedCategory = categoryDao.insertCategory(
+//            Category(
+//                originalCategoryName = domainName
+//            )
+//        ).toInt()
+
         categoryDao.insertCategory(
             Category(
                 originalCategoryName = domainName
             )
         )
+//        val insertedArticle = articleDao.insertArticleWorker(
+//            article = Article(
+
+//        if (insertedCategory == -1) {
+//            Log.d(TAG, "checkCategoriesAndInsert: OLD ROW")
+//            //old row
+//            isOldCategory = true
+//        }
+
+        Log.d(TAG, "checkCategoriesAndInsert: AFTER INSERTING")
     }
 
 
-
     private suspend fun insertToDB(url: String, domainName: String) {
+
+//                url = url,
+//                domainName = domainName
+//            )
+//        ).toInt()
+
         articleDao.insertArticle(
             article = Article(
                 url = url,
                 domainName = domainName
             )
         )
+
+//        if (insertedArticle != -1) {
+//            Log.d(TAG, "insertToDB: new article")
+//
+//            if (isOldCategory) {
+//                Log.d(TAG, "insertToDB: old category")
+//                categoryDao.incrementAlreadyReadField(articleDomainName = domainName)
+//            }
+//        }
     }
 
     private fun extractDomainNameFromUri(url: String): String? {

@@ -1,8 +1,9 @@
-package com.example.shareway.utils
+package com.example.shareway.utils.extensions
 
 import android.app.Activity
 import android.widget.Toast
 import androidx.annotation.StringRes
+import com.example.shareway.utils.StateMessageCallback
 
 
 private val TAG: String = "AppDebug"

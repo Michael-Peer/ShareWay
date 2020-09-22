@@ -1,5 +1,7 @@
 package com.example.shareway.utils
 
+import com.example.shareway.utils.extensions.AreYouSureCallback
+
 
 data class StateMessage(val response: Response)
 

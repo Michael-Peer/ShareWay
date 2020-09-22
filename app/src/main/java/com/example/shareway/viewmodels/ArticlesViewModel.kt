@@ -1,16 +1,16 @@
 package com.example.shareway.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import com.example.shareway.models.Article
 import com.example.shareway.repositories.ArticleRepository
+import com.example.shareway.utils.FilterMode
 import com.example.shareway.viewstates.ArticlesViewState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
 
 @InternalCoroutinesApi
 @ExperimentalCoroutinesApi
@@ -18,20 +18,57 @@ class ArticlesViewModel(
     private val articleRepository: ArticleRepository
 ) : ViewModel() {
 
+    companion object{
+        private const val TAG = "ArticlesViewModel"
+
+    }
+
     private val _viewState = MutableLiveData<ArticlesViewState>()
     val viewState: LiveData<ArticlesViewState>
         get() = _viewState
 
 
-    suspend fun getArticles(categoryName: String) {
-        articleRepository.getAllArticleByCategory(categoryName).collect {
+//    suspend fun getArticles(categoryName: String) {
+//        articleRepository.getAllArticleByCategory(categoryName).collect {
+//            _viewState.postValue(it)
+//        }
+//    }
+
+    suspend fun getArticles(
+        categoryName: String,
+        filterMode: FilterMode = FilterMode.ALL
+
+    ) {
+        Log.d(TAG, "getArticles: $filterMode")
+        articleRepository.getAllArticleByCategory(categoryName, filterMode).collect {
             _viewState.postValue(it)
         }
-
     }
 
-    fun insertArticle(article : Article) {
+    fun insertArticle(article: Article) {
         articleRepository.insertArticle(article)
     }
+
+    fun updateAlreadyRead(url: String) {
+        articleRepository.updateAlreadyRead(url)
+    }
+
+    fun deleteArticles(articles: List<Article>) {
+        Log.d(TAG, "deleteArticles: $articles")
+        articleRepository.deleteArticles(articles)
+    }
+
+    fun updateMultipleMarkAsRead(articles: List<Article>) {
+        articleRepository.updateMultipleMarkAsRead(articles)
+    }
+
+
+//    fun incrementCategoryAlreadyReadField(domainName: String) {
+//        articleRepository.incrementCategoryAlreadyReadField(domainName)
+//    }
+//
+//    fun decrementCategoryAlreadyReadField(domainName: String) {
+//        articleRepository.decrementCategoryAlreadyReadField(domainName)
+//    }
 
 }

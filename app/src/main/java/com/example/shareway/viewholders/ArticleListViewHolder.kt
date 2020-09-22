@@ -29,12 +29,30 @@ class ArticleListViewHolder(
         itemView.setOnLongClickListener(this)
     }
 
+//    fun bind(articleItem: Article?) {
+//        Log.d(TAG, "bind: $articleItem ")
+//        articleItem?.let {
+//            Log.d(TAG, "bind: Date Added: ${it.dateAdded}")
+//            binding.apply {
+//                textView.text = articleItem.url
+//                Log.d(TAG, "bind: ALREADY READ ${it.alreadyRead}")
+//                if (it.alreadyRead) binding.alreadyReadIcon.visibility =
+//                    View.VISIBLE else binding.alreadyReadIcon.visibility = View.GONE
+//            }
+//        }
+//
+//    }
+
     fun bind(articleItem: Article?) {
+
         Log.d(TAG, "bind: $articleItem ")
         articleItem?.let {
+            Log.d(TAG, "bind: Date Added: ${it.dateAdded}")
             binding.apply {
                 textView.text = articleItem.url
-                if (it.alreadyRead) binding.alreadyReadIcon.visibility = View.VISIBLE
+                Log.d(TAG, "bind: ALREADY READ ${it.alreadyRead}")
+                if (it.alreadyRead) binding.alreadyReadIcon.visibility =
+                    View.VISIBLE else binding.alreadyReadIcon.visibility = View.GONE
             }
         }
 
@@ -54,8 +72,13 @@ class ArticleListViewHolder(
     override fun onLongClick(v: View?): Boolean {
         Log.d(TAG, "onLongClick: clicked")
         //check if true or false
-        if (binding.alreadyReadIcon.isVisible) binding.alreadyReadIcon.visibility =
-            View.GONE else binding.alreadyReadIcon.visibility = View.VISIBLE
+        if (binding.alreadyReadIcon.isVisible) {
+            Log.d(TAG, "bind: ALREADY READ VISIBILITY = VISIBLE! NOW IT ISN'T")
+            binding.alreadyReadIcon.visibility = View.GONE
+        } else {
+            Log.d(TAG, "bind: ALREADY READ VISIBILITY = NOT(!!!) VISIBLE! NOW IT IS")
+            binding.alreadyReadIcon.visibility = View.VISIBLE
+        }
         //true if the callback consumed the long click, false otherwise.
         onArticleClickListener.onLongArticleClick(adapterPosition)
         return true

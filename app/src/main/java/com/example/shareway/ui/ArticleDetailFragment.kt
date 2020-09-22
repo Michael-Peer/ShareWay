@@ -1,5 +1,7 @@
 package com.example.shareway.ui
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,6 +14,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.shareway.databinding.FragmentArticleDetailBinding
 import com.example.shareway.listeners.UICommunicationListener
+import kotlinx.android.synthetic.main.fragment_article_detail.*
 
 
 class ArticleDetailFragment : Fragment() {
@@ -56,5 +59,24 @@ class ArticleDetailFragment : Fragment() {
             webViewClient = WebViewClient()
             loadUrl(args.articleUrl)
         }
+
+        handleFabClicks()
+    }
+
+    private fun handleFabClicks() {
+        shareFloatingActionButton.setOnClickListener {
+            val url = args.articleUrl
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            /**
+             *
+             * FAN ICON WITH OPEN IN THE WEB, SAHRE IN MAIl WHATS UP ETC/
+             *
+             * Maybe checkbox in the app bar that user can decide if show/hide the share button
+             *
+             * **/
+            requireContext().startActivity(intent)
+        }
+
     }
 }

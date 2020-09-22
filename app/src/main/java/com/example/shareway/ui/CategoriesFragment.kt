@@ -160,6 +160,7 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
                 is CategoriesViewState.CategoryList -> {
 //                    uiCommunicationListener.displayProgressBar(false)
                     Log.d(TAG, "CategoriesViewState.CategoryList: ${it.categories.size}")
+
 //                    categoryListRecyclerViewAdapter.submitList(it.categories)
                     categoryListRecyclerViewAdapter.modifyList(it.categories)
                     Log.d(TAG, "DATA")

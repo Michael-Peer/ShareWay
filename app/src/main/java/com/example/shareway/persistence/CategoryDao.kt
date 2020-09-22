@@ -14,6 +14,9 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE originalCategoryName = :categoryName")
     fun getCategory(categoryName: String): Flow<Category>
 
+//    @Query("SELECT * FROM categories WHERE originalCategoryName = :categoryName")
+//    fun getCategoryWithoutFlow(categoryName: String): Category
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun saveItemsPosition(category: Category)
 
@@ -25,4 +28,16 @@ interface CategoryDao {
 
     @Query("DELETE FROM categories")
     suspend fun deleteAllCategories()
+
+//    @Update
+//    fun updateCategory(category: Category)
+
+
+//    @Query("UPDATE categories SET numberOfArticles = numberOfArticles + 1 WHERE originalCategoryName = :articleDomainName")
+//    fun incrementAlreadyReadField(articleDomainName: String)
+//
+//    @Query("UPDATE categories SET numberOfArticles = numberOfArticles - 1  WHERE originalCategoryName = :articleDomainName")
+//    fun decrementAlreadyReadField(articleDomainName: String)
+
+
 }

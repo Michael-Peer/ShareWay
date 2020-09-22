@@ -4,4 +4,14 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="order_by">Order by</string>
     <string name="search">Search</string>
+    <string name="by_name">By Name</string>
+    <string name="by_date">By Date</string>
+    <string name="filter">Filter</string>
+    <string name="all">All</string>
+    <string name="already_read">Already Read</string>
+    <string name="not_read">Not Read</string>
+    <string name="order">Order</string>
+    <string name="delete_items">Delete Items</string>
+    <string name="mark_as_read">Mark As Read</string>
+
 </resources>

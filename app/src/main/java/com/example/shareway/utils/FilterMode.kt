@@ -1,6 +1,7 @@
 package com.example.shareway.utils
 
 enum class FilterMode {
-    NAME, //by name
-    DATE //by order
+    ALREADY_READ,
+    NOT_READ,
+    ALL
 }

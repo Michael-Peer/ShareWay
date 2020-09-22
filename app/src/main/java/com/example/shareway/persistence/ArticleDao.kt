@@ -17,13 +17,31 @@ interface ArticleDao {
     @Query("SELECT * FROM articles WHERE domainName = :categoryName")
     fun getAllArticlesByCategoryName(categoryName: String): Flow<List<Article>>
 
+    @Query("SELECT * FROM articles WHERE domainName = :categoryName AND alreadyRead = :alreadyRead")
+    fun getFilteredArticles(categoryName: String, alreadyRead: Boolean): Flow<List<Article>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertArticle(article: Article)
+
+//    @Insert(onConflict = OnConflictStrategy.IGNORE)
+//    suspend fun insertArticleWorker(article: Article): Long
 
     @Delete
     suspend fun deleteArticle(article: Article)
 
+    @Delete
+    suspend fun deleteArticles(article: List<Article>)
+
     @Query("DELETE FROM articles")
     suspend fun deleteAllArticles()
+
+
+    @Query("UPDATE articles SET alreadyRead = NOT alreadyRead WHERE url = :url")
+    suspend fun updateAlreadyRead(url: String)
+
+
+
+//    @Query("UPDATE articles SET alreadyRead = :alreadyRead   WHERE url = :url")
+//    suspend fun updateAlreadyReadField(alreadyRead: Boolean, url: String)
 
 }
