@@ -3,7 +3,7 @@ package com.example.shareway.repositories
 import android.util.Log
 import com.example.shareway.models.Article
 import com.example.shareway.persistence.ArticleDao
-import com.example.shareway.utils.FilterMode
+import com.example.shareway.utils.modes.FilterMode
 import com.example.shareway.utils.UIComponentType
 import com.example.shareway.viewstates.ArticlesViewState
 import kotlinx.coroutines.*
@@ -138,9 +138,16 @@ class ArticleRepository(
         }
     }
 
-    fun updateMultipleMarkAsRead(articles: List<Article>) {
-
+    fun updateMultipleMarkAsRead(articles: List<String>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            articleDao.updateMultipleMarkAsRead(articles)
+        }
     }
+
+    fun deleteArticle(article: Article) {
+        CoroutineScope(Dispatchers.IO).launch {
+            articleDao.deleteArticle(article)
+        }    }
 
 //    fun incrementCategoryAlreadyReadField(domainName: String) {
 //        CoroutineScope(Dispatchers.IO).launch {

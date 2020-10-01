@@ -7,18 +7,22 @@ import androidx.recyclerview.widget.ListAdapter
 import com.example.shareway.R
 import com.example.shareway.databinding.ArticleListItemBinding
 import com.example.shareway.listeners.OnArticleClickListener
+import com.example.shareway.listeners.OnSwipeListener
 import com.example.shareway.models.Article
 import com.example.shareway.viewholders.ArticleListViewHolder
 import kotlinx.android.synthetic.main.article_list_item.view.*
 
-class ArticleListAdapter(private val onArticleClickListener: OnArticleClickListener) :
+class ArticleListAdapter(
+    private val onArticleClickListener: OnArticleClickListener,
+    private val onSwipeListener: OnSwipeListener
+) :
     ListAdapter<Article, ArticleListViewHolder>(DIFF_CALLBACK), ActionMode.Callback {
 
     // true if the user in selection mode, false otherwise
     private var multiSelectionMode = false
 
     // Keeps track of all the selected articles
-    private val  selectedItems = arrayListOf<Article>()
+    private val selectedItems = arrayListOf<Article>()
 
     companion object {
         private const val TAG = "ArticleListAdapter"
@@ -75,21 +79,23 @@ class ArticleListAdapter(private val onArticleClickListener: OnArticleClickListe
             true
         }
 
-//        holder.itemView.constraint_container.setOnClickListener {
+        holder.itemView.constraint_container.setOnClickListener {
 
-        //if in selection mode - add item. if not - go to article detail page
+//        if in selection mode - add item. if not - go to article detail page
 
-//         if (multiSelectionMode) {
-//             selectItems(holder,articleItem)
-//         }
-//        }
+            if (multiSelectionMode) {
+                selectItems(holder, articleItem)
+            } else {
+                holder.triggerOnClickListener()
+            }
+        }
         holder.bind(articleItem)
     }
 
     private fun selectItems(holder: ArticleListViewHolder, articleItem: Article?) {
         if (selectedItems.contains(articleItem)) {
             Log.d(TAG, "selectItems: inside if")
-            selectedItems.remove(articleItem)
+            selectedItems.remove(articleItem) //TODO: Exit ActionMode when nothing left?
             holder.itemView.constraint_container.alpha = 1.0f
         } else {
             Log.d(TAG, "selectItems: inside else")
@@ -183,6 +189,59 @@ class ArticleListAdapter(private val onArticleClickListener: OnArticleClickListe
     fun clearSelection() {
         selectedItems.clear()
         multiSelectionMode = false
+    }
+
+
+    fun isMultiSelectionActive(): Boolean {
+        return multiSelectionMode
+    }
+
+    fun onSwipedDelete(adapterPosition: Int) {
+        Log.d(TAG, "onArticleSwiped: SWIPED AT POSITION $adapterPosition LEFT LEFT LEFT")
+        val itemToDelete = getItem(adapterPosition)
+        onSwipeListener.onSwipeToDelete(adapterPosition, itemToDelete)
+    }
+
+
+    fun onSwipedAlreadyRead(adapterPosition: Int) {
+        Log.d(TAG, "onArticleSwiped: SWIPED AT POSITION $adapterPosition RIGHT RIGHT RIGHT")
+//        onSwipeListener.onSwipeToAlreadyRead(adapterPosition)
+        if (!getItem(adapterPosition).alreadyRead) {
+            /**
+             *
+             * Not mark as read yet
+             *
+             * **/
+            onSwipeListener.onSwipeToAlreadyRead(adapterPosition, false)
+        } else {
+            /**
+             *
+             *  mark as read
+             *
+             * **/
+            onSwipeListener.onSwipeToAlreadyRead(adapterPosition, true)
+        }
+//        notifyItemChanged(adapterPosition)
+    }
+
+    fun getArticlesUrlList(position: Int): List<String> {
+        val currentList = currentList
+        val urlList = arrayListOf<String>()
+        for (article in currentList) {
+            urlList.add(article.url)
+        }
+
+        /**
+         *
+         * Just for test.
+         * TODO: improve preformence
+         *
+         *
+         * **/
+        urlList.remove(getItem(position).url)
+        urlList.add(getItem(position).url)
+        return urlList
+
     }
 
 

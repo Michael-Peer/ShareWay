@@ -102,6 +102,12 @@ class MainActivity : AppCompatActivity(), UICommunicationListener {
         Log.d(TAG, "onDestroy: ")
     }
 
+    /**
+     *
+     * Handle the back button pressing.
+     * we search for the top(current) fragment, and decide what to do based on the fragment
+     *
+     * **/
     @ExperimentalCoroutinesApi
     @InternalCoroutinesApi
     override fun onBackPressed() {

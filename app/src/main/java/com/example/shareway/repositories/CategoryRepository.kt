@@ -57,6 +57,8 @@ class CategoryRepository(
 
         delay(4000)
 
+
+
         try {
             categoryDao.getAllCategories().collect {
                 emit(

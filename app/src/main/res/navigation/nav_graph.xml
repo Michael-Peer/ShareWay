@@ -31,7 +31,7 @@
         android:label="fragment_article_detail"
         tools:layout="@layout/fragment_article_detail" >
         <argument
-            android:name="articleUrl"
-            app:argType="string" />
+            android:name="articlesUrlList"
+            app:argType="string[]" />
     </fragment>
 </navigation>

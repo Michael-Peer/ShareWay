@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.shareway.models.Article
 import com.example.shareway.repositories.ArticleRepository
-import com.example.shareway.utils.FilterMode
+import com.example.shareway.utils.modes.FilterMode
 import com.example.shareway.viewstates.ArticlesViewState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -18,7 +18,7 @@ class ArticlesViewModel(
     private val articleRepository: ArticleRepository
 ) : ViewModel() {
 
-    companion object{
+    companion object {
         private const val TAG = "ArticlesViewModel"
 
     }
@@ -59,7 +59,24 @@ class ArticlesViewModel(
     }
 
     fun updateMultipleMarkAsRead(articles: List<Article>) {
-        articleRepository.updateMultipleMarkAsRead(articles)
+
+        val articleUrlList: List<String> = convertToIdList(articles)
+
+        Log.d(TAG, "updateMultipleMarkAsRead: $articleUrlList")
+        articleRepository.updateMultipleMarkAsRead(articleUrlList)
+    }
+
+    private fun convertToIdList(articles: List<Article>): List<String> {
+        val urlList = arrayListOf<String>()
+
+        for (article in articles) {
+            urlList.add(article.url)
+        }
+        return urlList
+    }
+
+    fun deleteArticle(article: Article) {
+        articleRepository.deleteArticle(article)
     }
 
 

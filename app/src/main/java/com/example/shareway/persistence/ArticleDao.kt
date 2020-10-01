@@ -39,6 +39,9 @@ interface ArticleDao {
     @Query("UPDATE articles SET alreadyRead = NOT alreadyRead WHERE url = :url")
     suspend fun updateAlreadyRead(url: String)
 
+    //1 = true, 0 = false
+    @Query("UPDATE articles SET alreadyRead = 1 WHERE url in (:articleUrlList)")
+    suspend fun updateMultipleMarkAsRead(articleUrlList: List<String>)
 
 
 //    @Query("UPDATE articles SET alreadyRead = :alreadyRead   WHERE url = :url")

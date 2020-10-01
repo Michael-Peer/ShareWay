@@ -84,5 +84,9 @@ class ArticleListViewHolder(
         return true
     }
 
+    fun triggerOnClickListener() {
+        onClick(itemView)
+    }
+
 
 }

@@ -1,4 +1,4 @@
-package com.example.shareway.utils
+package com.example.shareway.utils.modes
 
 enum class FilterMode {
     ALREADY_READ,
