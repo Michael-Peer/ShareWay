@@ -7,6 +7,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.shareway.databinding.ArticleListItemBinding
 import com.example.shareway.listeners.OnArticleClickListener
 import com.example.shareway.models.Article
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 class ArticleListViewHolder(
     private val binding: ArticleListItemBinding,
@@ -50,9 +54,15 @@ class ArticleListViewHolder(
             Log.d(TAG, "bind: Date Added: ${it.dateAdded}")
             binding.apply {
                 textView.text = articleItem.url
+//                date.text = it.dateAdded.toString()
+                val dateFormat = LocalDateTime.ofInstant(it.dateAdded, ZoneOffset.UTC)
+//                date.text = dateFormat.toString()
+//                date.text = dateFormat.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT))
+                date.text = dateFormat.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG))
                 Log.d(TAG, "bind: ALREADY READ ${it.alreadyRead}")
                 if (it.alreadyRead) binding.alreadyReadIcon.visibility =
                     View.VISIBLE else binding.alreadyReadIcon.visibility = View.GONE
+
             }
         }
 

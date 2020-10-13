@@ -109,8 +109,14 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
                 is ArticlesViewState.ArticleList -> {
 //                    uiCommunicationListener.displayProgressBar(false)
                     Log.d(TAG, "ArticlesViewState.ArticleList: ${it.articles.size}")
-                    articleListRecyclerViewAdapter.submitList(it.articles)
-                    Log.d(TAG, "DATA")
+                    if (it.articles.isEmpty()) {
+                        binding.noContentText.visibility = View.VISIBLE
+                    } else {
+                        binding.noContentText.visibility = View.GONE
+                        articleListRecyclerViewAdapter.submitList(it.articles)
+                        Log.d(TAG, "DATA")
+                    }
+
                 }
             }
         })

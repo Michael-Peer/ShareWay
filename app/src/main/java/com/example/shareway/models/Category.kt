@@ -23,7 +23,7 @@ data class Category(
      *
      * **/
 //    var newCategoryName: String? = ""
-    var newCategoryName: String = originalCategoryName
+    var newCategoryName: String = originalCategoryName,
 
     /**
      *
@@ -31,5 +31,21 @@ data class Category(
      *
      * **/
 //    var numberOfArticles: Int = 1
+
+    /**
+     *
+     * base url of category
+     *
+     *
+     * **/
+    val baseUrl: String,
+
+    /**
+     *
+     *
+     * Website favicon
+     *
+     * **/
+    var faviconUrl: String? = null
 )
 

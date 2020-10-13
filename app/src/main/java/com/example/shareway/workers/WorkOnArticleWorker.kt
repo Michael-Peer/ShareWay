@@ -13,6 +13,7 @@ import com.example.shareway.persistence.ArticleDao
 import com.example.shareway.persistence.CategoryDao
 import com.example.shareway.utils.Constants
 import kotlinx.coroutines.delay
+import org.jsoup.Jsoup
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
@@ -35,13 +36,14 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
         val url = inputData.getString(Constants.URL_KEY)
 
         url?.let { websiteName = extractDomainNameFromUri(it) } ?: return Result.failure()
+        //don't need check for null, if it was null we already returning Result.failure()
 
         websiteName?.let {
             try {
-
+                val faviconUrl = extractFaviconFromUri(url)
 
 //                fakeDelay(it, url)
-                checkCategoriesAndInsert(it)
+                checkCategoriesAndInsert(it, url, faviconUrl)
                 insertToDB(url, it)
                 Log.d(TAG, "articleDao hash code: ${articleDao.hashCode()}")
                 Log.d(TAG, "categoryDao hash code: ${categoryDao.hashCode()}")
@@ -60,6 +62,70 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
                 return Result.failure()
             }
         } ?: return Result.failure()
+    }
+
+
+    //just an example TODO: Update code for efficentiy
+    /**
+     *
+     * Handle different scenarios of fetching images from the web(not favicon.ico! favicon become very blurry and not optimize at all)
+     *
+     * **/
+    private fun extractFaviconFromUri(url: String): String? {
+        Log.d(TAG, "extractFaviconFromUri: $url")
+        val doc = Jsoup.connect(url).get()
+        Log.d(TAG, "extractFaviconFromUri: ${doc.title()}")
+        val element = doc.head().select("link[rel=apple-touch-icon]")
+        Log.d(TAG, "extractFaviconFromUri: $element")
+        var attr = element.attr("href")
+        Log.d(TAG, "extractFaviconFromUri: $attr")
+
+        /**
+         *
+         * Completely different url
+         *
+         * we need to add in the end "https://" because glide can't download without it
+         *
+         * **/
+        if (attr.startsWith("//")) {
+            Log.d(TAG, "extractFaviconFromUri: start with //")
+            while (attr.startsWith("/")) {
+                attr = attr.removePrefix("/")
+            }
+            Log.d(TAG, "extractFaviconFromUri: attr = $attr")
+            return "https://$attr"
+        }
+        /**
+         *
+         * If the image url start with "/", we need to check several scenarios.
+         * 1)if the base url ends with "/", we need to eliminate the "/" from the start of image url. double slash work on the web, not here for image downloading
+         * 2)if image url doesn't start with "/", it's a case where we have fully qualified url and we can just return the image url without adding the base url to it
+         * 3)if image url is still empty, we are looking for another element. in that case, og:image
+         *
+         * **/
+        else if (attr.startsWith("/")) {
+            Log.d(TAG, "extractFaviconFromUri: start with /")
+            if (url.endsWith("/")) {
+                Log.d(TAG, "extractFaviconFromUri: url end with /")
+                val newAttr = attr.removePrefix("/")
+                Log.d(TAG, "extractFaviconFromUri: $newAttr")
+                attr = "$url$newAttr"
+                Log.d(TAG, "extractFaviconFromUri: $newAttr")
+            } else {
+                Log.d(TAG, "extractFaviconFromUri: url doesn't end with /")
+                attr = "$url$attr"
+            }
+        }
+
+        if (attr.isEmpty()) {
+            Log.d(TAG, "extractFaviconFromUri: empty")
+            val metaOgImage = doc.select("meta[property=og:image]").first();
+            val ogImageAttr = metaOgImage.attr("content")
+            Log.d(TAG, "extractFaviconFromUri: $ogImageAttr")
+            attr = ogImageAttr
+        }
+        Log.d(TAG, "extractFaviconFromUri: attr = $attr")
+        return if (attr.isEmpty()) null else attr
     }
 
     private suspend fun fakeDelay(domainName: String, url: String) {
@@ -84,7 +150,11 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
 //        )
 //    }
 
-    private suspend fun checkCategoriesAndInsert(domainName: String) {
+    private suspend fun checkCategoriesAndInsert(
+        domainName: String,
+        url: String,
+        faviconUrl: String?
+    ) {
 //        val insertedCategory = categoryDao.insertCategory(
 //            Category(
 //                originalCategoryName = domainName
@@ -93,7 +163,9 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
 
         categoryDao.insertCategory(
             Category(
-                originalCategoryName = domainName
+                originalCategoryName = domainName,
+                baseUrl = getUrlHost(url)!!, //TODO: Handle null
+                faviconUrl = faviconUrl
             )
         )
 //        val insertedArticle = articleDao.insertArticleWorker(
@@ -134,13 +206,17 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
     }
 
     private fun extractDomainNameFromUri(url: String): String? {
-        val uri: Uri = url.toUri()
-        val uriHost = uri.host
+        val uriHost = getUrlHost(url)
         var websiteName: String? = null
         uriHost?.let { host ->
             websiteName = getWebsiteNameFromUri(host)
         }
         return websiteName
+    }
+
+    private fun getUrlHost(url: String): String? {
+        val uri: Uri = url.toUri()
+        return uri.host
     }
 
     private fun getWebsiteNameFromUri(host: String): String {

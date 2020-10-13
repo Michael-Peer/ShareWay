@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.Instant
+import java.time.LocalDateTime
 
 /**
  * \
@@ -20,6 +21,14 @@ data class Article constructor(
     val url: String,
     val domainName: String,
     var alreadyRead: Boolean = false,
+
+    /**
+     *
+     * Ref answer why I'm using here Instant and not LocalDateTime - https://stackoverflow.com/questions/54991260/getting-java-time-datetimeexception-when-formatting-localdatetime-instance-with
+     *
+     * **/
     val dateAdded: Instant = Instant.now()
+//    val dateTime: LocalDateTime
+
 ) {
 }
