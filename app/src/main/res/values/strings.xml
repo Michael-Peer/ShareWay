@@ -13,5 +13,8 @@
     <string name="order">Order</string>
     <string name="delete_items">Delete Items</string>
     <string name="mark_as_read">Mark As Read</string>
+    <string name="filter_mode_prefs">filterMode</string>
+    <string name="filter_mode_value">filterModeValue</string>
+
 
 </resources>

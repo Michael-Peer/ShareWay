@@ -15,32 +15,33 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/backgroindc"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/orangepink"
             >
 
-<!--            <ImageView-->
-<!--                android:id="@+id/favicon"-->
-<!--                android:layout_width="48dp"-->
-<!--                android:layout_height="48dp"-->
-<!--                android:layout_marginEnd="8dp"-->
-<!--                android:layout_marginBottom="8dp"-->
-<!--                app:layout_constraintBottom_toBottomOf="parent"-->
-<!--                app:layout_constraintEnd_toEndOf="parent"-->
-<!--                app:srcCompat="@drawable/ic_launcher_background" />-->
-
-            <com.mikhaellopez.circularimageview.CircularImageView
+            <ImageView
                 android:id="@+id/favicon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
-                app:civ_border="false"
-                app:civ_circle_color="@android:color/transparent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:srcCompat="@drawable/ic_launcher_background" />
+
+<!--            <com.mikhaellopez.circularimageview.CircularImageView-->
+<!--                android:id="@+id/favicon"-->
+<!--                android:layout_width="48dp"-->
+<!--                android:layout_height="48dp"-->
+<!--                android:layout_marginEnd="8dp"-->
+<!--                android:layout_marginBottom="8dp"-->
+<!--                app:civ_border="false"-->
+<!--                app:civ_circle_color="@android:color/transparent"-->
+<!--                app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                            app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:srcCompat="@drawable/ic_launcher_background" />-->
 
             <TextView
                 android:id="@+id/categoryNameText"
@@ -70,12 +71,23 @@
                 android:id="@+id/acceptEditIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_baseline_check_24" />
+
+            <ImageView
+                android:id="@+id/resetIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toStartOf="@+id/acceptEditIcon"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_baseline_refresh_24" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

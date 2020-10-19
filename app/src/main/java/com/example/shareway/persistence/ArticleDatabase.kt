@@ -12,7 +12,7 @@ import com.example.shareway.utils.converters.Converters
 
 private const val DB_NAME = "articles.db"
 
-@Database(entities = [Article::class, Category::class], version = 11)
+@Database(entities = [Article::class, Category::class], version = 13)
 @TypeConverters(Converters::class)
 abstract class ArticleDatabase : RoomDatabase() {
 

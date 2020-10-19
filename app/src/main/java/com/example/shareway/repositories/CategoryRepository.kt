@@ -125,13 +125,33 @@ class CategoryRepository(
                 categoryDao.saveItemsPosition(item)
             }
         }
+    }
 
+    fun saveItemsPositionSync(items: List<Category>) {
+            for (item in items) {
+                categoryDao.saveItemsPosition(item)
+            }
     }
 
     fun saveNewCategoryName(newCategoryName: String, currentCategory: Category) {
         currentCategory.newCategoryName = newCategoryName
         CoroutineScope(Dispatchers.IO).launch {
             categoryDao.insertCategory(category = currentCategory)
+        }
+    }
+
+    fun resetToOriginalName(
+        category: Category,
+        categories: List<Category>
+    ) {
+//        CoroutineScope(Dispatchers.IO).launch {
+//            saveItemsPositionSync(categories)
+//            categoryDao.resetToOriginalCategoryName(category.originalCategoryName)
+//        }
+
+        category.newCategoryName = category.originalCategoryName
+        CoroutineScope(Dispatchers.IO).launch {
+            categoryDao.insertCategory(category)
         }
     }
 }

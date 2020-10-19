@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -70,6 +71,9 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
     override fun onPause() {
         super.onPause()
         Log.d(TAG, "onPause: ")
+        val imm =
+            context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
         categoriesViewModel.saveItemsPosition(categoryListRecyclerViewAdapter.currentList)
     }
 
@@ -101,6 +105,15 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
         Log.d(TAG, "onViewCreated: ")
 
 
+        /**
+         *
+         * For testing
+         *
+         * **/
+//        val sharedPref = requireActivity().getSharedPreferences("onBoarding", Context.MODE_PRIVATE)
+//        val editor = sharedPref.edit()
+//        editor.putBoolean("finishedOnBoarding", false)
+//        editor.apply()
 
         observeViewState()
         initRecyclerView()
@@ -206,6 +219,82 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
             categoriesViewModel.saveNewCategoryName(newCategoryName, it)
         }
     }
+
+    /**
+     *
+     * This function called when the reset icon clicked when inside edit mode, the function will reset the name to the original name
+     * we need to call [saveItemsPosition] because we're updating the screen, and when the screen gets updated the order of the items changes too.
+     * Because I'm calling to save position only in [onPause] (in order to save DB call), I need to save the position before I'm updating the DB
+     *
+     * Inside the Repo I've now 2 [saveItemsPosition], one that launch coroutine, and second that doesn't.
+     * Because 2 coroutines runs in parallel, The text update (usually) ends before the list update, and it messes the order.
+     * Inside coroutine thae code run synchronously so I created  saveItemsPosition function that doesn't launch any coroutine, and called [saveItemsPosition] before I'm updating the original name
+     *
+     *
+     * **UPDATE**:
+     * It still have little "glitches" in some edge cases(Doesn't mess the order, just go back to old place for a fraction of second and go back to the correct place)
+     * I believe that's because it's done update the DB, and until the updates go back to the recycler view, the text update is done. As I said, the frequency is RARE, but still happen.
+     * I decided to took another approach, I'm updating the screen with the original name from the in app model, and inserting the name to the DB, like I'm doing with the accept edit button.
+     *
+     *
+     *
+     * **/
+    override fun onResetIconClick(adapterPosition: Int) {
+//        categoriesViewModel.saveItemsPosition(categoryListRecyclerViewAdapter.currentList)
+        val category = categoryListRecyclerViewAdapter.getCurrentCategory(adapterPosition)
+        category?.let {
+            categoriesViewModel.resetToOriginalName(it, categoryListRecyclerViewAdapter.currentList)
+        }
+    }
+
+
+    /**
+     *
+     * [onEnterEditMode] + [onExitEditMode]
+     *
+     * In those callbacks(through onCategoryListener) I'm disabling clicks on item when the user enters the edit mode, other than the item that currently being edited.
+     * TODO: Consider disable also other click types(binding.root, long etc) even on the edited item.
+     * I've [isClickable] field in the category model, which is ignored by room.
+     * when enter I simply set this to false to all items other than the current item, and opposite when exiting
+     *
+     * TODO: Handle home button press(which is currently returning to edit mode, but probably good UX will be if the user leaves the app without confirm editing is to reset editing and exit edit mode. Also, notify user why he can't click on other items while in editing mode
+     *
+     * **/
+
+    override fun onEnterEditMode(adapterPosition: Int) {
+        Log.d(TAG, "onEnterEditMode: ")
+        val list = categoryListRecyclerViewAdapter.currentList
+        list.forEachIndexed { index, category ->
+            if (index != adapterPosition) {
+
+                category.isClickable = false
+                categoryListRecyclerViewAdapter.notifyItemChanged(index)
+            }
+            Log.d(
+                TAG,
+                "onEnterEditMode: category ${category.originalCategoryName} isClickable ${category.isClickable} position $index"
+            )
+        }
+//        categoryListRecyclerViewAdapter.notifyDataSetChanged()
+    }
+
+    override fun onExitEditMode(adapterPosition: Int) {
+        Log.d(TAG, "onExitEnterMode: ")
+        val list = categoryListRecyclerViewAdapter.currentList
+        list.forEachIndexed { index, category ->
+            if (index != adapterPosition) {
+
+                category.isClickable = true
+                categoryListRecyclerViewAdapter.notifyItemChanged(index)
+
+            }
+            Log.d(
+                TAG,
+                "onExitEnterMode: category ${category.originalCategoryName} isClickable ${category.isClickable} position $index"
+            )
+        }
+    }
+
 
     /**
      *

@@ -12,6 +12,7 @@ import com.example.shareway.models.Category
 import com.example.shareway.persistence.ArticleDao
 import com.example.shareway.persistence.CategoryDao
 import com.example.shareway.utils.Constants
+import com.google.common.net.InternetDomainName
 import kotlinx.coroutines.delay
 import org.jsoup.Jsoup
 import org.koin.core.KoinComponent
@@ -41,6 +42,7 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
         websiteName?.let {
             try {
                 val faviconUrl = extractFaviconFromUri(url)
+                Log.d(TAG, "doWork: after favicon")
 
 //                fakeDelay(it, url)
                 checkCategoriesAndInsert(it, url, faviconUrl)
@@ -120,12 +122,20 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
         if (attr.isEmpty()) {
             Log.d(TAG, "extractFaviconFromUri: empty")
             val metaOgImage = doc.select("meta[property=og:image]").first();
-            val ogImageAttr = metaOgImage.attr("content")
+            Log.d(TAG, "extractFaviconFromUri: Fail")
+            Log.d(TAG, "extractFaviconFromUri: $metaOgImage")
+            val ogImageAttr: String? = metaOgImage?.attr("content")
             Log.d(TAG, "extractFaviconFromUri: $ogImageAttr")
             attr = ogImageAttr
         }
         Log.d(TAG, "extractFaviconFromUri: attr = $attr")
-        return if (attr.isEmpty()) null else attr
+        /**
+         *
+         * Here I needed to check [isNullOrEmpty] insead of just [isEmpty] because I got a crash when tried to check emptiness on a null object.
+         * web ref: facebook.com
+         *
+         * **/
+        return if (attr.isNullOrEmpty()) null else attr
     }
 
     private suspend fun fakeDelay(domainName: String, url: String) {
@@ -206,7 +216,8 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
     }
 
     private fun extractDomainNameFromUri(url: String): String? {
-        val uriHost = getUrlHost(url)
+        val uriHost = getUrlHost(url) //return www.example.com
+        Log.d(TAG, "extractDomainNameFromUri: $uriHost")
         var websiteName: String? = null
         uriHost?.let { host ->
             websiteName = getWebsiteNameFromUri(host)
@@ -220,8 +231,22 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
     }
 
     private fun getWebsiteNameFromUri(host: String): String {
-        val cutString = host.substringAfter(".")
-        return cutString.substringBefore(".").capitalize()
+
+        val domain = InternetDomainName.from(host).topPrivateDomain().toString()
+        Log.d(TAG, "getWebsiteNameFromUri: host $host")
+        Log.d(TAG, "getWebsiteNameFromUri: domain $domain")
+//        val cutString = host.substringAfter(".")
+        return try {
+            domain.substringBefore(".").capitalize()
+        } catch (e: IllegalArgumentException) {
+            //TODO: HANDLE ERROR
+            ""
+        } catch (e: IllegalStateException) {
+            //TODO: HANDLE ERROR
+            ""
+        }
+
+
     }
 
 

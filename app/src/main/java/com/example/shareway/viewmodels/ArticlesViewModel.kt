@@ -37,7 +37,6 @@ class ArticlesViewModel(
     suspend fun getArticles(
         categoryName: String,
         filterMode: FilterMode = FilterMode.ALL
-
     ) {
         Log.d(TAG, "getArticles: $filterMode")
         articleRepository.getAllArticleByCategory(categoryName, filterMode).collect {

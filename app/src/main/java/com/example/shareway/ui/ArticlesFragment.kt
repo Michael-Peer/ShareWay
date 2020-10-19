@@ -24,7 +24,10 @@ import com.example.shareway.utils.UIComponentType
 import com.example.shareway.utils.modes.FilterMode
 import com.example.shareway.viewmodels.ArticlesViewModel
 import com.example.shareway.viewstates.ArticlesViewState
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -49,6 +52,8 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
 
     private val articlesViewModel: ArticlesViewModel by viewModel()
     private val args: ArticlesFragmentArgs by navArgs()
+
+    private val selectedDate: String? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,6 +81,7 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
         observeViewState()
         initRecyclerView()
         getArticles()
+
 
         //TODO: Move to function
         val callback: ItemTouchHelper.Callback =
@@ -107,15 +113,24 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
                 }
 
                 is ArticlesViewState.ArticleList -> {
+                    Log.d(TAG, "observeViewState: is list empty ${it.articles.isEmpty()}")
 //                    uiCommunicationListener.displayProgressBar(false)
                     Log.d(TAG, "ArticlesViewState.ArticleList: ${it.articles.size}")
+
+                    /**
+                     *
+                     * Determine if to show "empty list" text.
+                     * Either way I need to submit to list cause it need to be updated either to 0 or to it.article.size
+                     *
+                     * **/
                     if (it.articles.isEmpty()) {
+                        Log.d(TAG, "observeViewState: EMPTY")
                         binding.noContentText.visibility = View.VISIBLE
                     } else {
                         binding.noContentText.visibility = View.GONE
-                        articleListRecyclerViewAdapter.submitList(it.articles)
                         Log.d(TAG, "DATA")
                     }
+                    articleListRecyclerViewAdapter.submitList(it.articles)
 
                 }
             }
@@ -123,8 +138,32 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
     }
 
     private fun getArticles() {
+        val sharedPref =
+            activity?.getSharedPreferences(
+                getString(R.string.filter_mode_prefs),
+                Context.MODE_PRIVATE
+            )
+
+        var filterMode = 0
+        sharedPref?.let {
+            filterMode = sharedPref.getInt(getString(R.string.filter_mode_value), 0)
+        }
+        Log.d(TAG, "getArticles: $filterMode")
+        val filterType = when (filterMode) {
+            1 -> {
+                FilterMode.ALREADY_READ
+            }
+            2 -> {
+                FilterMode.NOT_READ
+            }
+            else -> {
+                FilterMode.ALL
+            }
+        }
+
+        Log.d(TAG, "getArticles: filter type = $filterType filterMode = $filterMode")
         lifecycleScope.launch {
-            articlesViewModel.getArticles(args.domainName)
+            articlesViewModel.getArticles(args.domainName, filterType)
         }
     }
 
@@ -219,6 +258,119 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
         }
     }
 
+
+
+    /**
+     *
+     * on set reminder button clicked
+     *
+     * **/
+    override fun onSetRemainderButtonClick(position: Int) {
+        setDateAndTimePickers()
+    }
+
+    private fun setDateAndTimePickers() {
+        var selectedDate: Long?
+        var selectedHour: Int?
+        var selectedMinute: Int?
+
+        val datePicker = getDatePickerDialog()
+
+        datePicker.show(childFragmentManager, datePicker.toString())
+
+        handleDatePickerOnPositiveButtonClicked(datePicker)
+        handleDatePickerOnCancelOrNegativeButtonClicked(datePicker)
+
+    }
+
+    /**
+     *
+     *
+     * DatePicker Handlers
+     *
+     * **/
+
+    private fun handleDatePickerOnCancelOrNegativeButtonClicked(datePicker: MaterialDatePicker<Long>) {
+        datePicker.addOnCancelListener {
+            uiCommunicationListener.onResponseReceived("cancel", UIComponentType.Toast)
+
+        }
+        datePicker.addOnNegativeButtonClickListener {
+            uiCommunicationListener.onResponseReceived("negative", UIComponentType.Toast)
+
+        }
+    }
+
+    private fun handleDatePickerOnPositiveButtonClicked(datePicker: MaterialDatePicker<Long>) {
+        datePicker.addOnPositiveButtonClickListener {
+
+            val timePicker = getTimePickerDialog()
+            timePicker.show(childFragmentManager, "tag")
+
+            handleTimePickerOnPositiveButtonClicked(timePicker)
+            handleTimePickerOnCancelOrNegativeButtonClicked(timePicker)
+
+
+            //TODO: Handle time dismiss. set the reminder time to the current time.
+            //TODO: show toast with the time + date
+
+        }
+    }
+
+    /**
+     *
+     *
+     * TimePicker Handlers
+     *
+     * **/
+
+    private fun handleTimePickerOnCancelOrNegativeButtonClicked(timePicker: MaterialTimePicker) {
+
+    }
+
+    private fun handleTimePickerOnPositiveButtonClicked(timePicker: MaterialTimePicker) {
+        timePicker.addOnPositiveButtonClickListener {
+
+
+        }
+    }
+
+
+    /**
+     *
+     * Get DatePicker & TimePicker Dialogs
+     *
+     * **/
+
+    private fun getTimePickerDialog(): MaterialTimePicker {
+        return MaterialTimePicker.Builder()
+            .setTimeFormat(TimeFormat.CLOCK_24H)
+            .build()
+    }
+
+//    Log.d(
+////                    TAG, "onSetRemainderButtonClick: " +
+////                            "DATE: ${selectedDate.toString()}" +
+////                            "TIME: Hour - $selectedHour Minute $selectedMinute"
+////                )
+
+    private fun getDatePickerDialog(): MaterialDatePicker<Long> {
+        /**
+         *
+         *
+         *  Depending on the type of MaterialDatePicker you have built, we can handle this in one of two ways.
+         *  For a DatePicker, the selected value would be passed a unix epoch time value in a Long variable that is accessible as an argument in the PositiveButtonClickedListener lambda.
+         *  it can also be read as a string in the header text of the Picker( Jan 10, Jul 28 etc)
+         *
+         *
+         * **/
+        val buildDatePicker = MaterialDatePicker.Builder.datePicker()
+        buildDatePicker.setTitleText("Select Reminder Date")
+        buildDatePicker.setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+        return buildDatePicker.build()
+    }
+
+
     /**
      *
      * END OF RELATED FUNCTIONS EXPLANATION
@@ -233,19 +385,25 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
+
         when (item.itemId) {
             R.id.filter_all -> {
                 item.isChecked = true
                 lifecycleScope.launch {
                     articlesViewModel.getArticles(args.domainName)
                 }
+                saveToSharedPrefs(0)
                 return true
             }
             R.id.filter_already_read -> {
                 item.isChecked = true
                 lifecycleScope.launch {
+//                    articlesViewModel.getArticles(args.domainName, FilterMode.ALREADY_READ)
                     articlesViewModel.getArticles(args.domainName, FilterMode.ALREADY_READ)
+
                 }
+                saveToSharedPrefs(1)
+
                 return true
             }
             R.id.filter_no_read -> {
@@ -253,18 +411,86 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
                 lifecycleScope.launch {
                     articlesViewModel.getArticles(args.domainName, FilterMode.NOT_READ)
                 }
+                saveToSharedPrefs(2)
+
                 return true
             }
-            R.id.order_by_name -> {
-                item.isChecked = true
-                return true
-            }
-            R.id.order_by_date -> {
-                item.isChecked = true
-                return true
-            }
+//            R.id.order_by_name -> {
+//                item.isChecked = true
+//                return true
+//            }
+//            R.id.order_by_date -> {
+//                item.isChecked = true
+//                return true
+//            }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    /**
+     *
+     * When the menu being populated, we need to know which filter user chose(default is 0 - ALL)
+     *
+     * **/
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+
+        val sharedPref =
+            activity?.getSharedPreferences(
+                getString(R.string.filter_mode_prefs),
+                Context.MODE_PRIVATE
+            )
+
+        var filterMode = 0
+        sharedPref?.let {
+            filterMode = sharedPref.getInt(getString(R.string.filter_mode_value), 0)
+        }
+        Log.d(TAG, "getArticles: $filterMode")
+        when (filterMode) {
+            1 -> {
+                menu.findItem(R.id.filter_already_read).isChecked = true
+            }
+            2 -> {
+                menu.findItem(R.id.filter_no_read).isChecked = true
+            }
+            else -> {
+                menu.findItem(R.id.filter_all).isChecked = true
+            }
+        }
+    }
+
+    /**
+     *
+     * Saving user filter options
+     *
+     * **/
+    private fun saveToSharedPrefs(enumMirror: Int) {
+        Log.d(TAG, "saveToSharedPrefs: $enumMirror")
+
+        val sharedPref =
+            activity?.getSharedPreferences(
+                getString(R.string.filter_mode_prefs),
+                Context.MODE_PRIVATE
+            )
+
+        sharedPref?.let {
+//            with(sharedPref.edit()) {
+//                putInt(getString(R.string.filter_mode_value), enumMirror)
+//                /**
+//                 *
+//                 * SharedPrefs docs:
+//                 *
+//                 * apply() changes the in-memory SharedPreferences object immediately but writes the updates to disk asynchronously.
+//                 * Alternatively, you can use commit() to write the data to disk synchronously.
+//                 *
+//                 * But because commit() is synchronous, you should avoid calling it from your main thread because it could pause your UI rendering.
+//                 *
+//                 * **/
+//                apply()
+//            }
+            it.edit().putInt(getString(R.string.filter_mode_value), enumMirror).apply()
+
+        }
     }
 
     /**
@@ -349,5 +575,6 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
 
 
     }
+
 
 }

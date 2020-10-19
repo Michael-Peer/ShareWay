@@ -152,6 +152,8 @@ class CategoryListAdapter(
         Log.d(TAG, "onRowClear: ")
     }
 
+
+
     companion object {
         private const val TAG = "CategoryL return@setOnTouchListener truestAdapter"
 

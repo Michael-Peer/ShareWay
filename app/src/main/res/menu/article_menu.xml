@@ -33,7 +33,6 @@
                     android:checkableBehavior="single">
                     <item
                         android:id="@+id/filter_all"
-                        android:checked="true"
                         android:title="@string/all" />
                     <item
                         android:id="@+id/filter_already_read"

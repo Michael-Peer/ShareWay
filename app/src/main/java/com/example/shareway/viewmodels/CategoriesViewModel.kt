@@ -92,5 +92,9 @@ class CategoriesViewModel constructor(
 //        categoryRepository.getCatergoriesByName()
     }
 
+    fun resetToOriginalName(category: Category, categories: List<Category>) {
+        categoryRepository.resetToOriginalName(category, categories)
+    }
+
 
 }

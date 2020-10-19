@@ -1,10 +1,11 @@
 package com.example.shareway.viewholders
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import androidx.core.content.ContextCompat.getSystemService
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.shareway.databinding.CategoryListItemBinding
@@ -22,19 +23,27 @@ class CategoryListViewHolder(
         private const val TAG = "CategoryListViewHolder"
     }
 
+    private var originalName: String? = null
+    var isClickable: Boolean = true
+
     init {
         binding.root.setOnClickListener(this)
         binding.categoryNameText.setOnClickListener(this)
         binding.acceptEditIcon.setOnClickListener(this)
+        binding.resetIcon.setOnClickListener(this)
     }
 
-    fun bind(categoryItem: Category?) {
+    fun bind(categoryItem: Category) {
+
+        originalName = categoryItem.originalCategoryName
+        isClickable = categoryItem.isClickable
 
 //        if (categoryItem != null) {
 //            Log.d(TAG, "bind: Number of articles ${categoryItem.numberOfArticles}")
 //            binding.tempArticleNum.text = categoryItem.numberOfArticles.toString()
 //        }
         var hasNewName = false
+        //TODO: change check
         categoryItem?.let {
 //            if (it.newCategoryName != "") {
             Glide.with(itemView)
@@ -42,14 +51,37 @@ class CategoryListViewHolder(
 //                .load("${categoryItem.baseUrl}/apple-touch-icon.png")
                 .load(categoryItem.faviconUrl)
 //                .load("http://logo.clearbit.com/${categoryItem.baseUrl}")
-
-
                 .centerCrop()
+//                .listener(object : RequestListener<Drawable> {
+//                    override fun onLoadFailed(
+//                        e: GlideException?,
+//                        model: Any?,
+//                        target: Target<Drawable>?,
+//                        isFirstResource: Boolean
+//                    ): Boolean {
+//                        TODO("Not yet implemented")
+//                    }
+//
+//                    override fun onResourceReady(
+//                        resource: Drawable?,
+//                        model: Any?,
+//                        target: Target<Drawable>?,
+//                        dataSource: DataSource?,
+//                        isFirstResource: Boolean
+//                    ): Boolean {
+//
+//                        return true
+//                    }
+//
+//                })
                 .into(binding.favicon)
+
             if (it.newCategoryName != it.originalCategoryName) {
                 hasNewName = true
             }
             binding.apply {
+
+
                 categoryNameText.text =
                     if (!hasNewName) categoryItem.originalCategoryName else categoryItem.newCategoryName
 
@@ -58,40 +90,93 @@ class CategoryListViewHolder(
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onClick(v: View?) {
-        when (v) {
-            binding.root -> {
-                Log.d(TAG, "onClick:  binding.root ")
-                onCategoryClickListener.onCategoryClick(adapterPosition)
-            }
+        Log.d(TAG, "onClick: is clickable $isClickable")
+        if (isClickable) {
+            when (v) {
+                binding.root -> {
+////                Log.d(TAG, "onClick:  binding.root ${binding.favicon.isVisible} ")
+////                Log.d(TAG, "onClick: drawable ${binding.favicon.drawable}")
+//                val bitmap = (binding.favicon.drawable as BitmapDrawable).bitmap
+//                val boundsTOP = binding.favicon.drawable.bounds.top
+//                val boundsRIGHT = binding.favicon.drawable.bounds.right
+//                Log.d(TAG, "onClick: bounds: top: ${bitmap.height} right: ${bitmap.width}")
+//                val pixel = bitmap.getColor(bitmap.width - 5, bitmap.height - 5)
+//                Log.d(TAG, "onClick: pixel: $pixel")
+////                binding.backgroindc.background = pixel.toDrawable()
+//                val drawable = binding.favicon.background as ColorDrawable
+//                binding.backgroindc.background = drawable.color.toDrawable()
+//                val pal = Palette.Builder(bitmap)
+//                val palette = pal.generate { palette ->
+////                    binding.backgroindc.background = palette?.mutedSwatch?.rgb.toDrawable()
+//                    Log.d(TAG, "onClick: ${palette?.vibrantSwatch}")
+//                    Log.d(TAG, "onClick: ${palette?.darkVibrantSwatch}")
+//                    Log.d(TAG, "onClick: ${palette?.lightVibrantSwatch}")
+//                    Log.d(TAG, "onClick: ${palette?.mutedSwatch}")
+//                    Log.d(TAG, "onClick: ${palette?.darkMutedSwatch}")
+//                    Log.d(TAG, "onClick: ${palette?.lightMutedSwatch}")
+//
+//                }
+                    onCategoryClickListener.onCategoryClick(adapterPosition)
+                }
 
-            binding.categoryNameText -> {
-                Log.d(TAG, "onClick:  binding.textView")
-                replaceToEditMode()
-                binding.categoryNameEditText.setOnEditorActionListener { v, actionId, event ->
-                    Log.d(TAG, "onEditorAction: $actionId")
-                    Log.d(TAG, "onEditorAction: $event")
+                binding.categoryNameText -> {
+
+                    Log.d(TAG, "onClick:  binding.textView")
+                    replaceToEditMode()
+                    //keyboard V icon
+                    binding.categoryNameEditText.setOnEditorActionListener { v, actionId, event ->
+                        Log.d(TAG, "onEditorAction: $actionId")
+                        Log.d(TAG, "onEditorAction: $event")
+                        saveEdit()
+
+                        true
+                    }
+                }
+
+
+                binding.acceptEditIcon -> {
                     saveEdit()
-                    false
+                }
+
+                binding.resetIcon -> {
+                    Log.d(TAG, "onClick: reset icon")
+                    resetToOriginalName()
                 }
             }
-
-            binding.acceptEditIcon -> {
-                saveEdit()
-            }
         }
+
+    }
+
+    private fun resetToOriginalName() {
+        Log.d(TAG, "resetToOriginalName: reset icon")
+        binding.categoryNameEditText.visibility = View.GONE
+        binding.acceptEditIcon.visibility = View.GONE
+        binding.resetIcon.visibility = View.GONE
+        binding.categoryNameText.text = originalName
+        binding.categoryNameText.visibility = View.VISIBLE
+
+        onCategoryClickListener.onResetIconClick(
+            adapterPosition
+        )
+        val imm =
+            itemView.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
+        onCategoryClickListener.onExitEditMode(adapterPosition)
+
     }
 
 
     private fun replaceToEditMode() {
+        onCategoryClickListener.onEnterEditMode(adapterPosition)
         val currentText = binding.categoryNameText.text
         if (currentText.isNotEmpty()) {
             binding.categoryNameText.visibility = View.GONE
             binding.categoryNameEditText.setText(currentText)
             binding.categoryNameEditText.visibility = View.VISIBLE
             binding.acceptEditIcon.visibility = View.VISIBLE
-            requestFocusAndOpenKeyboard()
-            binding.categoryNameEditText.requestFocus()
+            binding.resetIcon.visibility = View.VISIBLE
             requestFocusAndOpenKeyboard()
         }
     }
@@ -103,7 +188,8 @@ class CategoryListViewHolder(
      * **/
     private fun requestFocusAndOpenKeyboard() {
         binding.categoryNameEditText.requestFocus()
-        val imm = itemView.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm =
+            itemView.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
     }
 
@@ -111,14 +197,21 @@ class CategoryListViewHolder(
         if (binding.categoryNameText.text != binding.categoryNameEditText.text && binding.categoryNameEditText.text.isNotEmpty()) {
             binding.categoryNameEditText.visibility = View.GONE
             binding.acceptEditIcon.visibility = View.GONE
+            binding.resetIcon.visibility = View.GONE
             binding.categoryNameText.text = binding.categoryNameEditText.text
             binding.categoryNameText.visibility = View.VISIBLE
             onCategoryClickListener.onCheckIconClick(
                 binding.categoryNameText.text.toString(),
                 adapterPosition
             )
-
+            val imm =
+                itemView.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
+//            binding.categoryNameText.setOnClickListener(this)
+            onCategoryClickListener.onExitEditMode(adapterPosition)
         }
+
+
     }
 
     fun triggerListner() {

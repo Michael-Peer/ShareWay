@@ -20,6 +20,9 @@ interface CategoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun saveItemsPosition(category: Category)
 
+    @Query("UPDATE categories SET newCategoryName = originalCategoryName WHERE originalCategoryName in (:originalCategoryName)")
+    suspend fun resetToOriginalCategoryName(originalCategoryName: String)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertCategory(category: Category)
 

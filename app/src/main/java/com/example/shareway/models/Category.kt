@@ -1,6 +1,7 @@
 package com.example.shareway.models
 
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 
@@ -47,5 +48,25 @@ data class Category(
      *
      * **/
     var faviconUrl: String? = null
-)
+
+    /**
+     *
+     *
+     * Is item clickable when in edit mode
+     *
+     *
+     * **/
+
+) {
+    /**
+     *
+     * The [@Ignore] room annotation SHOULDN'T be inside the constructor.
+     * Ref: https://github.com/android/architecture-components-samples/issues/421
+     *
+     * This field determine if the category is currently clickable or not
+     *
+     * **/
+    @Ignore
+    var isClickable: Boolean = true
+}
 
