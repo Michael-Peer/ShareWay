@@ -1,6 +1,10 @@
 package com.example.shareway.ui
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -20,6 +24,7 @@ import com.example.shareway.listeners.OnArticleClickListener
 import com.example.shareway.listeners.OnSwipeListener
 import com.example.shareway.listeners.UICommunicationListener
 import com.example.shareway.models.Article
+import com.example.shareway.receivers.RemainderReceiver
 import com.example.shareway.utils.UIComponentType
 import com.example.shareway.utils.modes.FilterMode
 import com.example.shareway.viewmodels.ArticlesViewModel
@@ -32,6 +37,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.time.Instant
+import java.util.*
 
 @ExperimentalCoroutinesApi
 @InternalCoroutinesApi
@@ -259,7 +266,6 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
     }
 
 
-
     /**
      *
      * on set reminder button clicked
@@ -267,6 +273,40 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
      * **/
     override fun onSetRemainderButtonClick(position: Int) {
         setDateAndTimePickers()
+    }
+
+    override fun onReminderSet(
+        position: Int,
+        reminder: Instant,
+        hour: Int,
+        minute: Int
+    ) {
+        val c = Calendar.getInstance()
+        c.set(Calendar.HOUR_OF_DAY, hour)
+        c.set(Calendar.MINUTE, minute)
+        c.set(Calendar.SECOND, 0)
+        /**
+         *
+         * Great explanation why registering the broadcast worked only when the was in foreground/minimize but not didn't work when the app was killed:
+         * https://stackoverflow.com/questions/44149921/broadcast-receiver-not-working-when-app-is-closed/60197247
+         *
+         * In short summary -> when launch via debug mode and then we swipe to close the app, android consider it as Force Stop and unregister the receivers.
+         * It won't be happening if we launch the app ourselves
+         *
+         *
+         * TODO: Move to function
+         *
+         * **/
+        val alarmManager: AlarmManager =
+            activity?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(activity, RemainderReceiver::class.java)
+        intent.putExtra("articleUrl", articleListRecyclerViewAdapter.getCurrentURL(position))//TODO: HANDLE NULL
+        val pintent = PendingIntent.getBroadcast(activity, 1, intent, 	FLAG_UPDATE_CURRENT) // Pending intent docs about the flag - Flag indicating that if the described PendingIntent already exists, then keep it but replace its extra data with what is in this new Intent.
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, c.timeInMillis, pintent)
+        val currentArticle = articleListRecyclerViewAdapter.getCurrentArticle(position)
+        currentArticle?.let {
+            articlesViewModel.insertReminder(currentArticle, reminder)
+        }
     }
 
     private fun setDateAndTimePickers() {

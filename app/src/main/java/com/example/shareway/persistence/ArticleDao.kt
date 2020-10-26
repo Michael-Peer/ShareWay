@@ -3,6 +3,7 @@ package com.example.shareway.persistence
 import androidx.room.*
 import com.example.shareway.models.Article
 import kotlinx.coroutines.flow.Flow
+import java.time.Instant
 
 
 @Dao
@@ -42,6 +43,12 @@ interface ArticleDao {
     //1 = true, 0 = false
     @Query("UPDATE articles SET alreadyRead = 1 WHERE url in (:articleUrlList)")
     suspend fun updateMultipleMarkAsRead(articleUrlList: List<String>)
+
+
+    @Query("UPDATE articles SET reminder = :reminder WHERE url = :currentArticleUrl")
+    suspend fun updateReminder(currentArticleUrl: String, reminder: Instant)
+
+
 
 
 //    @Query("UPDATE articles SET alreadyRead = :alreadyRead   WHERE url = :url")

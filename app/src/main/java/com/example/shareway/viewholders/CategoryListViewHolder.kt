@@ -38,6 +38,7 @@ class CategoryListViewHolder(
         originalName = categoryItem.originalCategoryName
         isClickable = categoryItem.isClickable
 
+
 //        if (categoryItem != null) {
 //            Log.d(TAG, "bind: Number of articles ${categoryItem.numberOfArticles}")
 //            binding.tempArticleNum.text = categoryItem.numberOfArticles.toString()
@@ -118,7 +119,7 @@ class CategoryListViewHolder(
 //                    Log.d(TAG, "onClick: ${palette?.lightMutedSwatch}")
 //
 //                }
-                    onCategoryClickListener.onCategoryClick(adapterPosition)
+                onCategoryClickListener.onCategoryClick(adapterPosition)
                 }
 
                 binding.categoryNameText -> {

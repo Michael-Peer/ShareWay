@@ -2,6 +2,7 @@ package com.example.shareway.listeners
 
 import com.example.shareway.adapters.ArticleListAdapter
 import com.example.shareway.models.Article
+import java.time.Instant
 
 interface OnCategoryClickListener {
     fun onCategoryClick(position: Int)
@@ -21,6 +22,10 @@ interface OnArticleClickListener {
     fun onDeleteMultipleArticles(articles: List<Article>)
     fun onMarkAsReadMultipleArticles(articles: List<Article>)
     fun onSetRemainderButtonClick(position: Int)
-
-
+    fun onReminderSet(
+        position: Int,
+        reminder: Instant,
+        hour: Int,
+        minute: Int
+    )
 }

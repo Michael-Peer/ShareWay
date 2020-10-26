@@ -6,6 +6,13 @@ import java.time.LocalDateTime
 
 class Converters {
 
+    /**
+     *
+     * In Database, it's recommended to save date/time as timestamp
+     *
+     * **/
+
+
     @TypeConverter
     fun fromInstant(date: Instant?): Long? = date?.toEpochMilli()
 

@@ -15,6 +15,9 @@
     <string name="mark_as_read">Mark As Read</string>
     <string name="filter_mode_prefs">filterMode</string>
     <string name="filter_mode_value">filterModeValue</string>
+    <string name="read">Read</string>
+    <string name="more_options">More options</string>
+    <string name="set_reminder">Set Reminder</string>
 
 
 </resources>

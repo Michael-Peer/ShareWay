@@ -11,6 +11,7 @@ import com.example.shareway.viewstates.ArticlesViewState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.collect
+import java.time.Instant
 
 @InternalCoroutinesApi
 @ExperimentalCoroutinesApi
@@ -76,6 +77,10 @@ class ArticlesViewModel(
 
     fun deleteArticle(article: Article) {
         articleRepository.deleteArticle(article)
+    }
+
+    fun insertReminder(currentArticle: Article, reminder: Instant) {
+        articleRepository.insertReminder(currentArticle,reminder)
     }
 
 

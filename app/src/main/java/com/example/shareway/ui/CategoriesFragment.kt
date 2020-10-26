@@ -266,8 +266,8 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
         val list = categoryListRecyclerViewAdapter.currentList
         list.forEachIndexed { index, category ->
             if (index != adapterPosition) {
-
                 category.isClickable = false
+                categoryListRecyclerViewAdapter.changeEditMode(true)
                 categoryListRecyclerViewAdapter.notifyItemChanged(index)
             }
             Log.d(
@@ -285,6 +285,7 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
             if (index != adapterPosition) {
 
                 category.isClickable = true
+                categoryListRecyclerViewAdapter.changeEditMode(false)
                 categoryListRecyclerViewAdapter.notifyItemChanged(index)
 
             }

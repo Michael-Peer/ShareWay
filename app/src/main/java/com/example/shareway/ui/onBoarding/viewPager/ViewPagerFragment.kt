@@ -16,6 +16,8 @@ class ViewPagerFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        activity?.actionBar?.hide()
+
     }
 
     override fun onCreateView(

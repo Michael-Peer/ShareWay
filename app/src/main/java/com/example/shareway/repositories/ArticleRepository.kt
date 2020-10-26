@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import java.time.Instant
 
 @ExperimentalCoroutinesApi
 @InternalCoroutinesApi
@@ -148,6 +149,12 @@ class ArticleRepository(
         CoroutineScope(Dispatchers.IO).launch {
             articleDao.deleteArticle(article)
         }    }
+
+    fun insertReminder(currentArticle: Article, reminder: Instant) {
+        CoroutineScope(Dispatchers.IO).launch {
+            articleDao.updateReminder(currentArticle.url,reminder)
+        }
+    }
 
 //    fun incrementCategoryAlreadyReadField(domainName: String) {
 //        CoroutineScope(Dispatchers.IO).launch {

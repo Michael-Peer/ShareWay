@@ -68,5 +68,6 @@ data class Category(
      * **/
     @Ignore
     var isClickable: Boolean = true
+
 }
 

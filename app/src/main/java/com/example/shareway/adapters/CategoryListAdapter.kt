@@ -25,6 +25,8 @@ class CategoryListAdapter(
 
     private var mutableCopyList: List<Category> = ArrayList()
 
+    private var isEditMode = false
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryListViewHolder {
         val view =
@@ -56,12 +58,15 @@ class CategoryListAdapter(
     override fun onBindViewHolder(holder: CategoryListViewHolder, position: Int) {
         val categoryItem = getItem(position)
         holder.bind(categoryItem)
-        holder.itemView.categoryCardView.setOnTouchListener { v, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                this.startDragListener.onStartDrag(holder)
+        if (!isEditMode) {
+            holder.itemView.categoryCardView.setOnTouchListener { v, event ->
+                if (event.action == MotionEvent.ACTION_DOWN) {
+                    this.startDragListener.onStartDrag(holder)
+                }
+                return@setOnTouchListener false
             }
-            return@setOnTouchListener false
         }
+
 
 //        holder.itemView.container.setOnTouchListener { v, event ->
 //            when (event.action) {
@@ -152,6 +157,9 @@ class CategoryListAdapter(
         Log.d(TAG, "onRowClear: ")
     }
 
+    fun changeEditMode(editMode: Boolean) {
+        isEditMode = editMode
+    }
 
 
     companion object {

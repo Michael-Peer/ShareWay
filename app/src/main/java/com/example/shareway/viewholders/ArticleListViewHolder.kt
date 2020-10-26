@@ -3,22 +3,24 @@ package com.example.shareway.viewholders
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.shareway.R
 import com.example.shareway.databinding.ArticleListItemBinding
 import com.example.shareway.listeners.OnArticleClickListener
 import com.example.shareway.models.Article
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
-import kotlinx.android.synthetic.main.article_list_item.view.*
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.math.log
 
 class ArticleListViewHolder(
     private val binding: ArticleListItemBinding,
@@ -31,15 +33,17 @@ class ArticleListViewHolder(
     }
 
     init {
-        itemView.setOnClickListener(this)
-        itemView.setDateButton.setOnClickListener(this)
+        binding.root.setOnClickListener(this)
+        binding.setDateButton.setOnClickListener(this)
 //        itemView.setOnClickListener(object : DoubleClickListener() {
 //            override fun onDoubleClick(v: View) {
 //                Log.d(TAG, "onDoubleClick: DOUBLE CLICKED")
 //            }
 //
 //        })
-        itemView.setOnLongClickListener(this)
+        binding.root.setOnLongClickListener(this)
+        binding.popupMenu.setOnClickListener(this)
+
     }
 
 //    fun bind(articleItem: Article?) {
@@ -62,7 +66,13 @@ class ArticleListViewHolder(
         articleItem?.let {
             Log.d(TAG, "bind: Date Added: ${it.dateAdded}")
             binding.apply {
-                textView.text = articleItem.url
+                reminderIcon.visibility = if (it.reminder != null) View.VISIBLE else View.GONE
+                titleText.text = articleItem.title
+                Glide.with(itemView)
+                    .load(articleItem.articleImage)
+                    .centerCrop()
+                    .error(Glide.with(itemView).load(articleItem.defaultImage))
+                    .into(articleImage)
 //                date.text = it.dateAdded.toString()
                 val dateFormat = LocalDateTime.ofInstant(it.dateAdded, ZoneOffset.UTC)
 //                date.text = dateFormat.toString()
@@ -72,6 +82,7 @@ class ArticleListViewHolder(
                 if (it.alreadyRead) binding.alreadyReadIcon.visibility =
                     View.VISIBLE else binding.alreadyReadIcon.visibility = View.GONE
 
+                reminderText.text = it.reminder?.toString() ?: "No reminder for this article"
             }
         }
 
@@ -82,9 +93,36 @@ class ArticleListViewHolder(
 //        if (v == binding.setDateButton) onArticleClickListener.onSetRemainderButtonClick(
 //            adapterPosition
 ////        ) else onArticleClickListener.onArticleClick(adapterPosition)
-        if (v == binding.setDateButton) onSetReminderClicked()
-        else onArticleClickListener.onArticleClick(adapterPosition)
+        when (v) {
+            binding.setDateButton -> onSetReminderClicked()
+            binding.popupMenu -> showPopupMenu(v)
+            else -> onArticleClickListener.onArticleClick(adapterPosition)
+        }
 
+    }
+
+    private fun showPopupMenu(v: View) {
+        val popupMenu = PopupMenu(v.context, v)
+        popupMenu.inflate(R.menu.article_list_item_menu)
+        popupMenu.setOnMenuItemClickListener {
+
+            when (it.itemId) {
+                R.id.mark_as_read -> {
+                    Log.d(TAG, "showPopupMenu: mark as read clicked")
+                    return@setOnMenuItemClickListener true
+                }
+
+                R.id.set_reminder -> {
+                    Log.d(TAG, "showPopupMenu: set reminder clicked")
+                    onSetReminderClicked()
+                    return@setOnMenuItemClickListener true
+                }
+
+                else -> return@setOnMenuItemClickListener true
+
+            }
+        }
+        popupMenu.show()
     }
 
 
@@ -164,9 +202,15 @@ class ArticleListViewHolder(
                 "tag"
             )
 
-            Log.d(TAG, "handleDatePickerOnPositiveButtonClicked: SELECTION: ${datePicker.selection}")
+            Log.d(
+                TAG,
+                "handleDatePickerOnPositiveButtonClicked: SELECTION: ${datePicker.selection}"
+            )
             Log.d(TAG, "handleDatePickerOnPositiveButtonClicked: SELECTION: $it")
-            Log.d(TAG, "handleDatePickerOnPositiveButtonClicked: SELECTION: ${Instant.ofEpochMilli(it)}")
+            Log.d(
+                TAG,
+                "handleDatePickerOnPositiveButtonClicked: SELECTION: ${Instant.ofEpochMilli(it)}"
+            )
             Log.d(TAG, "handleDatePickerOnPositiveButtonClicked: SELECTION: ")
 
 
@@ -194,20 +238,43 @@ class ArticleListViewHolder(
         timePicker.addOnPositiveButtonClickListener {
             Log.d(TAG, "handleTimePickerOnPositiveButtonClicked: $it")
             Log.d(TAG, "handleTimePickerOnPositiveButtonClicked: ${timePicker.inputMode}")
-            Log.d(TAG, "handleTimePickerOnPositiveButtonClicked: ${timePicker.minute.javaClass.name}")
+            Log.d(
+                TAG,
+                "handleTimePickerOnPositiveButtonClicked: ${timePicker.minute.javaClass.name}"
+            )
             Log.d(TAG, "handleTimePickerOnPositiveButtonClicked: ${timePicker.hour}")
 
-//            Log.d(TAG, "handleTimePickerOnPositiveButtonClicked: ${datePicker.selection}")
-//            val inst = Instant.ofEpochMilli(datePicker.selection!!)
-//            val f = LocalDateTime.from(inst).plusHours(timePicker.hour.toLong()).plusMinutes(timePicker.minute.toLong())
-//            val formatter =
-//                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-//            Log.d(TAG, "handleTimePickerOnPositiveButtonClicked: ${f.format(formatter)}")
-//
-//            Log.d(
-//                TAG,
-//                "handleTimePickerOnPositiveButtonClicked: ${headerText} ${timePicker.hour} ${timePicker.minute}"
-//            )
+            Log.d(TAG, "handleTimePickerOnPositiveButtonClicked: ${datePicker.selection}")
+
+            val reminder = Instant.ofEpochMilli(datePicker.selection!!)
+                .plus(timePicker.hour.toLong(), ChronoUnit.HOURS)
+                .plus(timePicker.minute.toLong(), ChronoUnit.MINUTES)
+
+            Log.d(
+                TAG,
+                "handleTimePickerOnPositiveButtonClicked: inst with time $reminder epoch with time ${reminder.toEpochMilli()}"
+            )
+
+
+
+            Log.d(
+                TAG,
+                "handleTimePickerOnPositiveButtonClicked: ${headerText} ${timePicker.hour} ${timePicker.minute}"
+            )
+
+            onArticleClickListener.onReminderSet(
+                adapterPosition,
+                reminder,
+                timePicker.hour,
+                timePicker.minute
+            )
+
+            /**
+             *
+             * TODO: Cancel when reminder end. implement funcion what happen when reminder done(mayble check on reycler launch if there is active reminder will be a better solution)
+             *
+             * **/
+            binding.reminderIcon.visibility = View.VISIBLE
 //            val string = "Date: ${headerText} Time: ${timePicker.hour}:${timePicker.minute}"
 //            binding.reminderText.text = string
 

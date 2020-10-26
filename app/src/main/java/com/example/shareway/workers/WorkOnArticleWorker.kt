@@ -17,6 +17,7 @@ import kotlinx.coroutines.delay
 import org.jsoup.Jsoup
 import org.koin.core.KoinComponent
 import org.koin.core.inject
+import java.net.URL
 
 class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(appContext, workerParameters), KoinComponent {
@@ -24,7 +25,7 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
     private val articleDao: ArticleDao by inject()
     private val categoryDao: CategoryDao by inject()
 
-    private var isOldCategory = false
+    var articleTitle: String? = null
 
     companion object {
         private const val TAG = "WorkOnArticleWorker"
@@ -33,7 +34,8 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
     override suspend fun doWork(): Result {
 
         var websiteName: String? = null
-        //get data
+
+        //full article url e.g www.google.com/some/deep/nav
         val url = inputData.getString(Constants.URL_KEY)
 
         url?.let { websiteName = extractDomainNameFromUri(it) } ?: return Result.failure()
@@ -41,12 +43,22 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
 
         websiteName?.let {
             try {
-                val faviconUrl = extractFaviconFromUri(url)
+                /**
+                 *
+                 * here I'm passing the host(base) url, cause there are cases when it give me specific page images
+                 *
+                 * TODO: Run only if there is no category already
+                 * **/
+//                val faviconUrl = extractFaviconFromUri(getUrlHost(url) ?: url)
+                val faviconUrl = extractFaviconFromUri(getFullBaseUrl(url)?: url)
                 Log.d(TAG, "doWork: after favicon")
+
+                //get images for article
+                val image = extractArticleImage(url)
 
 //                fakeDelay(it, url)
                 checkCategoriesAndInsert(it, url, faviconUrl)
-                insertToDB(url, it)
+                insertToDB(url, it, faviconUrl)
                 Log.d(TAG, "articleDao hash code: ${articleDao.hashCode()}")
                 Log.d(TAG, "categoryDao hash code: ${categoryDao.hashCode()}")
 
@@ -61,9 +73,44 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
 
                 return Result.success(outputData)
             } catch (e: Throwable) {
+                Log.d(TAG, "doWork: $e")
                 return Result.failure()
             }
         } ?: return Result.failure()
+    }
+
+    private fun extractArticleImage(url: String): String? {
+        val doc = Jsoup.connect(url).get()
+
+        //first try to fetch ogImage
+        articleTitle = doc.title()
+        val title = doc.getElementById("title")
+        val content = doc.getElementById("content")
+
+
+//        //TODO: first find the og image, than than the others
+//        val images = doc.select("img[src~=(?i)\\.(jpe?g)]")
+//
+//        for (image in images) {
+//            Log.d(
+//                TAG, "extractArticleImage: Source: ${image.attr("src")}\n" +
+//                        "height: ${image.attr("height")}\n" +
+//                        "width: ${image.attr("width")}\n" +
+//                        "alt text: ${image.attr("alt")}"
+//            )
+//        }
+//
+//
+//        Log.d(TAG, "extractFaviconFromUri: TITLE ${doc.title()}")
+
+        Log.d(TAG, "extractFaviconFromUri: empty")
+        val metaOgImage = doc.select("meta[property=og:image]").first();
+        Log.d(TAG, "extractFaviconFromUri: Fail")
+        Log.d(TAG, "extractFaviconFromUri: $metaOgImage")
+        val ogImageAttr: String? = metaOgImage?.attr("content")
+        Log.d(TAG, "extractFaviconFromUri: $ogImageAttr")
+
+        return ogImageAttr
     }
 
 
@@ -81,6 +128,9 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
         Log.d(TAG, "extractFaviconFromUri: $element")
         var attr = element.attr("href")
         Log.d(TAG, "extractFaviconFromUri: $attr")
+
+
+
 
         /**
          *
@@ -191,7 +241,11 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
     }
 
 
-    private suspend fun insertToDB(url: String, domainName: String) {
+    private suspend fun insertToDB(
+        url: String,
+        domainName: String,
+        faviconUrl: String?
+    ) {
 
 //                url = url,
 //                domainName = domainName
@@ -201,7 +255,10 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
         articleDao.insertArticle(
             article = Article(
                 url = url,
-                domainName = domainName
+                domainName = domainName,
+                title = articleTitle,
+                articleImage = extractArticleImage(url),
+                defaultImage = faviconUrl
             )
         )
 
@@ -228,6 +285,11 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
     private fun getUrlHost(url: String): String? {
         val uri: Uri = url.toUri()
         return uri.host
+    }
+
+    private fun getFullBaseUrl(url: String): String? {
+        val base = URL(url)
+        return "${base.protocol}://${base.host}"
     }
 
     private fun getWebsiteNameFromUri(host: String): String {
