@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.ArticleDetailFragment">
+
+
+    <!--    <WebView-->
+    <!--        android:id="@+id/webView"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="match_parent">-->
+
+    <!--    </WebView>-->
+
+
+    <com.example.shareway.utils.views.CustomWebview
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+    <!--
+    I usually don't like at all using huge margins in my code, but here it is necessary, because I need to use the special behaviour of the CoordinatorLayout on scroll.
+    My calculation are based on the material design specs: https://material.io/develop/android/components/floating-action-button/
+    According to this, default fab size is 56dp, so I added to each one the fab size + margin + previous margin
+    for example:
+    first fab is 56dp size, 16dp margin from bottom, total 72. I added 8 margin between fabs, so the second fab bottom margin will be 80
+   -->
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/mainFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_baseline_article_24"
+        app:layout_behavior=".utils.views.FABCustomBehaviour" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/shareFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="86dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_baseline_share_24"
+        android:tooltipText="Share"
+        app:fabSize="mini"
+        app:layout_anchor="@id/mainFab"
+        app:layout_anchorGravity="center" />
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/markAsReadFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="142dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_baseline_check_circle_outline_24"
+        android:tooltipText="Mark as read"
+        app:fabSize="mini"
+        app:layout_anchor="@id/mainFab"
+        app:layout_anchorGravity="center" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/reminderFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="198dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_baseline_access_alarm_24"
+        android:tooltipText="Set reminder"
+        app:fabSize="mini"
+        app:layout_anchor="@id/markAsReadFab"
+        app:layout_anchorGravity="center" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
+    <!--<?xml version="1.0" encoding="utf-8"?>-->
+    <!--<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+    <!--    xmlns:tools="http://schemas.android.com/tools"-->
+    <!--    android:layout_width="match_parent"-->
+    <!--    android:layout_height="match_parent"-->
+    <!--    tools:context=".ui.ArticleDetailFragment">-->
+    <!--    -->
+
+    <!--    <WebView-->
+    <!--        android:id="@+id/webView"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="0dp"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent">-->
+
+    <!--    </WebView>-->
+
+    <!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+    <!--        android:id="@+id/mainFab"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginEnd="16dp"-->
+    <!--        android:layout_marginBottom="16dp"-->
+    <!--        android:clickable="true"-->
+    <!--        android:src="@drawable/ic_baseline_article_24"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        android:focusable="true" />-->
+
+    <!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+    <!--        android:id="@+id/shareFab"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginBottom="8dp"-->
+    <!--        android:clickable="true"-->
+    <!--        android:focusable="true"-->
+    <!--        android:src="@drawable/ic_baseline_share_24"-->
+    <!--        app:fabSize="mini"-->
+    <!--        app:layout_constraintBottom_toTopOf="@+id/mainFab"-->
+    <!--        app:layout_constraintEnd_toEndOf="@+id/mainFab"-->
+    <!--        app:layout_constraintStart_toStartOf="@+id/mainFab" />-->
+
+    <!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+    <!--        android:id="@+id/markAsReadFab"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginBottom="8dp"-->
+    <!--        android:clickable="true"-->
+    <!--        android:focusable="true"-->
+    <!--        android:src="@drawable/ic_baseline_check_circle_outline_24"-->
+    <!--        app:fabSize="mini"-->
+    <!--        app:layout_constraintBottom_toTopOf="@+id/shareFab"-->
+    <!--        app:layout_constraintEnd_toEndOf="@+id/shareFab"-->
+    <!--        app:layout_constraintStart_toStartOf="@+id/shareFab" />-->
+
+    <!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+    <!--        android:id="@+id/reminderFab"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginBottom="8dp"-->
+    <!--        android:clickable="true"-->
+    <!--        android:focusable="true"-->
+    <!--        android:src="@drawable/ic_baseline_access_alarm_24"-->
+    <!--        app:fabSize="mini"-->
+    <!--        app:layout_constraintBottom_toTopOf="@+id/markAsReadFab"-->
+    <!--        app:layout_constraintEnd_toEndOf="@+id/markAsReadFab"-->
+    <!--        app:layout_constraintStart_toStartOf="@+id/markAsReadFab" />-->
+
+    <!--</androidx.constraintlayout.widget.ConstraintLayout>-->

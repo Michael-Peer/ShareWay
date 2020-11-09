@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "542985724977",
+    "firebase_url": "https://sharehit-c7ced.firebaseio.com",
+    "project_id": "sharehit-c7ced",
+    "storage_bucket": "sharehit-c7ced.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:542985724977:android:e3b908f0a8f2984614a110",
+        "android_client_info": {
+          "package_name": "com.example.shareway"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "542985724977-fokbvj0pleksqr27nu71ik8jhvpql011.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.shareway",
+            "certificate_hash": "5e323506281da970a54b92b3d92187b6fccbaea9"
+          }
+        },
+        {
+          "client_id": "542985724977-9f2pu861e1b9ei26u6dr9pfjls2mct56.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlXFzCwoGyPjMud176ZN5TdsxIvSwei0s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "542985724977-9f2pu861e1b9ei26u6dr9pfjls2mct56.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
