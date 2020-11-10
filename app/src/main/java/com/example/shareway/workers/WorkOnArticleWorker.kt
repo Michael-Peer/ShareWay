@@ -15,6 +15,7 @@ import com.example.shareway.utils.Constants
 import com.google.common.net.InternetDomainName
 import kotlinx.coroutines.delay
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 import java.net.URL
@@ -128,6 +129,9 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
         Log.d(TAG, "extractFaviconFromUri: $element")
         var attr = element.attr("href")
         Log.d(TAG, "extractFaviconFromUri: $attr")
+        
+        
+        checkForArticleTag(doc)
 
 
 
@@ -186,6 +190,18 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
          *
          * **/
         return if (attr.isNullOrEmpty()) null else attr
+    }
+
+    private fun checkForArticleTag(doc: Document) {
+        val e = doc.select("div")
+        val ea = doc.getElementsByTag("div")
+
+        for (paragraph in doc.select("article[itemprop=articleBody]")) {
+            Log.d(TAG, "checkForArticleTag: ")
+            Log.d(TAG, "checkForArticleTag: $paragraph")
+        }
+
+        Log.d(TAG, "checkForArticleTag: ${e.size} ${ea.size}")
     }
 
     private suspend fun fakeDelay(domainName: String, url: String) {
@@ -282,18 +298,29 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
         return websiteName
     }
 
+    /**
+     *
+     *
+     * www.google.com/some/thing/weird2321 ----> www.google.com
+     *
+     * **/
     private fun getUrlHost(url: String): String? {
         val uri: Uri = url.toUri()
         return uri.host
     }
 
+    //adds protocol to start of url
     private fun getFullBaseUrl(url: String): String? {
         val base = URL(url)
         return "${base.protocol}://${base.host}"
     }
 
+    /**
+     *
+     * www.google.com/some/thing/weird2321 ----> google
+     *
+     * **/
     private fun getWebsiteNameFromUri(host: String): String {
-
         val domain = InternetDomainName.from(host).topPrivateDomain().toString()
         Log.d(TAG, "getWebsiteNameFromUri: host $host")
         Log.d(TAG, "getWebsiteNameFromUri: domain $domain")

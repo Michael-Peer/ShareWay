@@ -21,7 +21,7 @@ interface ArticleDao {
     @Query("SELECT * FROM articles WHERE domainName = :categoryName AND alreadyRead = :alreadyRead")
     fun getFilteredArticles(categoryName: String, alreadyRead: Boolean): Flow<List<Article>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertArticle(article: Article)
 
 //    @Insert(onConflict = OnConflictStrategy.IGNORE)

@@ -20,4 +20,10 @@
         android:id="@+id/view_notes"
         android:icon="@drawable/ic_baseline_note_24"
         android:title="@string/view_notes" />
+
+    <item
+        android:id="@+id/delete"
+        android:icon="@drawable/ic_baseline_delete_24"
+        android:title="@string/delete"
+        />
 </menu>

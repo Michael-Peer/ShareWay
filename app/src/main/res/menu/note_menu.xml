@@ -5,6 +5,11 @@
     <item
         android:id="@+id/save"
         android:icon="@drawable/ic_baseline_save_24"
-        android:title="Item"
+        android:title="Save"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/edit"
+        android:icon="@drawable/ic_baseline_edit_24"
+        android:title="Edit"
         app:showAsAction="ifRoom" />
 </menu>

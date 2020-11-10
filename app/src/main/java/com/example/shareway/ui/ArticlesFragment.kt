@@ -446,11 +446,11 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
     }
 
     override fun onAddNoteClick(adapterPosition: Int) {
-        val articleTitle = articleListRecyclerViewAdapter.getCurrentArticle(adapterPosition)
+        val articleTitle = articleListRecyclerViewAdapter.getCurrentURL(adapterPosition)
 //        val articlesURLList = articleListRecyclerViewAdapter.getArticlesUrlList(position)
         articleTitle?.let {
             val action =
-                ArticlesFragmentDirections.actionArticlesFragmentToNoteFragment(it)
+                ArticlesFragmentDirections.actionArticlesFragmentToNoteFragment(it, null)
             findNavController().navigate(action)
         }
 //        val articleTitle = articleListRecyclerViewAdapter.getCurrentTitle(adapterPosition)
@@ -468,7 +468,20 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
             val action =
                 ArticlesFragmentDirections.actionArticlesFragmentToNoteListFragment(it)
             findNavController().navigate(action)
-        }    }
+        }
+    }
+
+    override fun onDeleteArticle(adapterPosition: Int) {
+        articleListRecyclerViewAdapter.getCurrentArticle(adapterPosition)?.let {
+            showUndoSnackbar(adapterPosition, it)
+        } ?: uiCommunicationListener.onResponseReceived(
+            response = Response(
+                title = "Error",
+                message = "Unable to delete the article right now",
+                uiComponentType = UIComponentType.Toast
+            )
+        )
+    }
 
     private fun cancelExistingReminder(position: Int) {
 

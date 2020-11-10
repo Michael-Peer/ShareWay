@@ -33,4 +33,10 @@ interface OnArticleClickListener {
     fun onReminderIconClick(text: String, position: Int)
     fun onAddNoteClick(adapterPosition: Int)
     fun onViewNotesClick(adapterPosition: Int)
+    fun onDeleteArticle(adapterPosition: Int)
+}
+
+
+interface OnNoteClickListener {
+    fun onNoteClick(position: Int)
 }

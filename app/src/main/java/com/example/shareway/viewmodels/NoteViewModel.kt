@@ -16,11 +16,24 @@ class NoteViewModel constructor(
     private val articleRepository: ArticleRepository
 ) : ViewModel() {
 
+    enum class NoteMode {
+        VIEW_MODE,
+        EDIT_MODE,
+        CREATE_MODE
+    }
+
+    private var _noteMode = MutableLiveData<NoteMode>()
+    val noteMode: LiveData<NoteMode>
+        get() = _noteMode
+
 
     private var lastSource: LiveData<NotesViewState.NotesList>? = null
     private val _states = MediatorLiveData<NotesViewState>()
     val states: LiveData<NotesViewState> = _states
 
+    fun setMode(noteMode: NoteMode) {
+        _noteMode.value = noteMode
+    }
 
     fun saveNote(note: Note) {
         viewModelScope.launch {

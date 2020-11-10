@@ -9,7 +9,8 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.load
+import coil.transform.CircleCropTransformation
 import com.example.shareway.R
 import com.example.shareway.databinding.CategoryListItemBinding
 import com.example.shareway.listeners.OnCategoryClickListener
@@ -43,20 +44,23 @@ class CategoryListViewHolder(
         isClickable = categoryItem.isClickable
 
 
-//        if (categoryItem != null) {
-//            Log.d(TAG, "bind: Number of articles ${categoryItem.numberOfArticles}")
-//            binding.tempArticleNum.text = categoryItem.numberOfArticles.toString()
-//        }
         var hasNewName = false
         //TODO: change check
         categoryItem?.let {
+
+
+            binding.favicon.load(categoryItem.faviconUrl) {
+                crossfade(true)
+                transformations(CircleCropTransformation())
+            }
+
 //            if (it.newCategoryName != "") {
-            Glide.with(itemView)
+//            Glide.with(itemView)
 //                .load("http://www.google.com/s2/favicons?sz=72&domain=${categoryItem.baseUrl}")
 //                .load("${categoryItem.baseUrl}/apple-touch-icon.png")
-                .load(categoryItem.faviconUrl)
+//                .load(categoryItem.faviconUrl)
 //                .load("http://logo.clearbit.com/${categoryItem.baseUrl}")
-                .centerCrop()
+//                .centerCrop()
 //                .listener(object : RequestListener<Drawable> {
 //                    override fun onLoadFailed(
 //                        e: GlideException?,
@@ -79,7 +83,7 @@ class CategoryListViewHolder(
 //                    }
 //
 //                })
-                .into(binding.favicon)
+//                .into(binding.favicon)
 
             if (it.newCategoryName != it.originalCategoryName) {
                 hasNewName = true

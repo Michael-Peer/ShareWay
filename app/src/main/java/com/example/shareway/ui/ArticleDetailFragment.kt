@@ -61,6 +61,16 @@ class ArticleDetailFragment : Fragment() {
     private var shouldRestoreState: Boolean = false
     var bundle: Bundle? = null
 
+    /**
+     *
+     * @loadingProgress aim to track after the loading prgoeress.
+     * In [onStop] method I'm checking the value, if the value is below 100, I call uiCommunicationListener.displayProgressIndicator(100).
+     * I set the value to 100 to indicate the activity to stop the loading process
+
+     *
+     * **/
+    var loadingProgress = 0
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,6 +149,7 @@ class ArticleDetailFragment : Fragment() {
                 webChromeClient = object : CustomWebChromeClient(activity as AppCompatActivity) {
                     override fun onProgressChanged(view: WebView?, newProgress: Int) {
                         super.onProgressChanged(view, newProgress)
+                        loadingProgress = newProgress
                         uiCommunicationListener.displayProgressIndicator(newProgress)
                     }
 
@@ -162,6 +173,8 @@ class ArticleDetailFragment : Fragment() {
                     }
                 }
                 settings.javaScriptEnabled = true
+                settings.builtInZoomControls = true
+                settings.setSupportZoom(true)
                 /**
                  *
                  * we need to chagne the UA because google restriction, 403 disallowed user agent when trying to login to some services
@@ -644,6 +657,13 @@ class ArticleDetailFragment : Fragment() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (loadingProgress < 100) {
+            uiCommunicationListener.displayProgressIndicator(100)
+        }
     }
 
 

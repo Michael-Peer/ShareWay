@@ -81,10 +81,8 @@ class ArticlesViewModel(
 
     fun insertArticle(article: Article) {
         viewModelScope.launch {
-
         articleRepository.insertArticle(article)
         }
-
     }
 
     fun updateAlreadyRead(url: String) {

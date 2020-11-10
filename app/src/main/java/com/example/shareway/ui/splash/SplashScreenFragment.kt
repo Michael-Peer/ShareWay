@@ -31,6 +31,14 @@ class SplashScreenFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+
+
+
+        return inflater.inflate(R.layout.fragment_splash_screen, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         /**
          *
          * TODO: Replace dummy delay with initialization
@@ -41,10 +49,7 @@ class SplashScreenFragment : Fragment() {
                 R.id.action_splashScreenFragment_to_categoriesFragment
             )
 
-        }, 3000)
-
-
-        return inflater.inflate(R.layout.fragment_splash_screen, container, false)
+        }, 1000)
     }
 
     private fun isOnBoardingFinished(): Boolean {
