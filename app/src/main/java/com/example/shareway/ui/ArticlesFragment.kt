@@ -25,6 +25,7 @@ import com.example.shareway.receivers.RemainderReceiver
 import com.example.shareway.utils.UIComponentType
 import com.example.shareway.utils.managers.DateTimeManager
 import com.example.shareway.utils.modes.FilterMode
+import com.example.shareway.utils.modes.NoteMode
 import com.example.shareway.viewmodels.ArticlesViewModel
 import com.example.shareway.viewstates.ArticlesViewState
 import com.google.android.material.snackbar.Snackbar
@@ -450,7 +451,7 @@ class ArticlesFragment : Fragment(), OnArticleClickListener, OnSwipeListener {
 //        val articlesURLList = articleListRecyclerViewAdapter.getArticlesUrlList(position)
         articleTitle?.let {
             val action =
-                ArticlesFragmentDirections.actionArticlesFragmentToNoteFragment(it, null)
+                ArticlesFragmentDirections.actionArticlesFragmentToNoteFragment(it, null, NoteMode.CREATE_MODE)
             findNavController().navigate(action)
         }
 //        val articleTitle = articleListRecyclerViewAdapter.getCurrentTitle(adapterPosition)

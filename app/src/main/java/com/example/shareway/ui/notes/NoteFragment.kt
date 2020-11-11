@@ -1,10 +1,11 @@
 package com.example.shareway.ui.notes
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -13,8 +14,8 @@ import androidx.navigation.fragment.navArgs
 import com.example.shareway.R
 import com.example.shareway.databinding.FragmentNoteBinding
 import com.example.shareway.models.Note
+import com.example.shareway.utils.modes.NoteMode
 import com.example.shareway.viewmodels.NoteViewModel
-import com.example.shareway.viewmodels.NoteViewModel.NoteMode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -23,20 +24,21 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 @ExperimentalCoroutinesApi
 class NoteFragment : Fragment() {
 
-//    enum class NoteMode {
-//        VIEW_MODE,
-//        EDIT_MODE,
-//        CREATE_MODE
-//    }
 
     private lateinit var binding: FragmentNoteBinding
 
     private val args: NoteFragmentArgs by navArgs()
     private val notesViewModel: NoteViewModel by viewModel()
-    private var noteMode = NoteMode.VIEW_MODE
 
-    lateinit var editItem: MenuItem
-    lateinit var saveItem: MenuItem
+    lateinit var noteMode: NoteMode
+
+//    lateinit var editItem: MenuItem
+//    lateinit var saveItem: MenuItem
+
+    private var editItem: MenuItem? = null
+    private var saveItem: MenuItem? = null
+
+    private var firstTime: Boolean = true
 
 
     companion object {
@@ -46,9 +48,26 @@ class NoteFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        (activity as AppCompatActivity).supportRequestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
-        val w =  (activity as AppCompatActivity).window;
-        w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+//        (activity as AppCompatActivity).supportRequestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+//        val w = (activity as AppCompatActivity).window;
+//        w.setFlags(
+//            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+//            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+//        )
+        noteMode = savedInstanceState?.let {
+            when (it.getInt("noteMode")) {
+                0 -> NoteMode.VIEW_MODE
+                1 -> NoteMode.EDIT_MODE
+                2 -> NoteMode.CREATE_MODE
+                else -> NoteMode.VIEW_MODE
+            }
+        } ?: args.noteMode
+
+        if (savedInstanceState != null) {
+            //first time
+            firstTime = false
+        }
+
     }
 
     override fun onCreateView(
@@ -65,31 +84,28 @@ class NoteFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        if (args.note == null) {
-            noteMode = NoteMode.CREATE_MODE
-            notesViewModel.setMode(NoteMode.CREATE_MODE)
-        }
+        observeMode()
+        notesViewModel.setMode(noteMode)
+//        notesViewModel.setMode(args.noteMode)
 
-
-        if (noteMode == NoteMode.CREATE_MODE) {
-            binding.content.visibility = View.GONE
-            binding.contentEdit.visibility = View.VISIBLE
-        } else {
-            binding.content.text = args.note!!.content
-        }
-
-        obvserveMode()
+//        if (noteMode == NoteMode.CREATE_MODE) {
+//            binding.content.visibility = View.GONE
+//            binding.contentEdit.visibility = View.VISIBLE
+//        } else {
+//            binding.content.text = args.note!!.content
+//        }
 
 
 //        createdOn.text = Instant.now().toString()
 
     }
 
-    private fun obvserveMode() {
+    private fun observeMode() {
+        activity?.invalidateOptionsMenu()
         notesViewModel.noteMode.observe(viewLifecycleOwner, Observer { mode ->
-            Log.d(TAG, "obvserveMode: ")
+            Log.d(TAG, "observeMode: $mode ${mode.ordinal} ${mode.name}")
             noteMode = mode
-            changeMode()
+            changeLayoutMode()
         })
     }
 
@@ -97,6 +113,8 @@ class NoteFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.note_menu, menu)
+        editItem = menu.findItem(R.id.edit)
+        saveItem = menu.findItem(R.id.save)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -114,24 +132,10 @@ class NoteFragment : Fragment() {
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
-        editItem = menu.findItem(R.id.edit)
-        saveItem = menu.findItem(R.id.save)
-        if (noteMode == NoteMode.CREATE_MODE || noteMode == NoteMode.EDIT_MODE) editItem.isVisible =
-            false else saveItem.isVisible = false
+        if (noteMode == NoteMode.CREATE_MODE || noteMode == NoteMode.EDIT_MODE) menu.findItem(R.id.edit).isVisible =
+            false else menu.findItem(R.id.save).isVisible = false
     }
 
-    private fun changeMode() {
-        when (noteMode) {
-            NoteMode.EDIT_MODE -> {
-                changeLayoutMode()
-                noteMode = NoteMode.EDIT_MODE
-            }
-            NoteMode.VIEW_MODE -> {
-                changeLayoutMode()
-                noteMode = NoteMode.VIEW_MODE
-            }
-        }
-    }
 
     private fun editNote() {
         notesViewModel.setMode(NoteMode.EDIT_MODE)
@@ -151,6 +155,8 @@ class NoteFragment : Fragment() {
                     notesViewModel.saveNote(note)
                     notesViewModel.setMode(NoteMode.VIEW_MODE)
                 }
+                hideKeyboard()
+                navToPrevious()
             }
             NoteMode.EDIT_MODE -> {
                 Log.d(TAG, "saveNote: EDIT_MODE ${binding.contentEdit.text}")
@@ -161,6 +167,8 @@ class NoteFragment : Fragment() {
                         title = "I will replace this",
                         content = binding.contentEdit.text.toString()
                     )
+//                    notesViewModel.setText(binding.contentEdit.text.toString())
+                    hideKeyboard()
                     notesViewModel.saveNote(note)
                     notesViewModel.setMode(NoteMode.VIEW_MODE)
                 }
@@ -191,21 +199,135 @@ class NoteFragment : Fragment() {
 
     private fun changeLayoutMode() {
         when (noteMode) {
-            NoteMode.EDIT_MODE, NoteMode.CREATE_MODE -> {
-                binding.content.visibility = View.GONE
-                binding.contentEdit.visibility = View.VISIBLE
-                binding.contentEdit.setText(binding.content.text)
-                editItem.isVisible = false
-                saveItem.isVisible = true
-            }
+//            NoteMode.EDIT_MODE, NoteMode.CREATE_MODE -> {
+//                Log.d(TAG, "changeLayoutMode: edit text: ${binding.contentEdit.text}\n" +
+//                        "viewmode = ${notesViewModel.getText()}\n" +
+//                        "text = ${binding.content.text}")
+//
+//                binding.content.visibility = View.GONE
+//                binding.contentEdit.visibility = View.VISIBLE
+//                if (noteMode == NoteMode.EDIT_MODE) binding.contentEdit.setText(binding.content.text) else binding.contentEdit.setText(
+//                    notesViewModel.getText()
+//                )
+//                editItem?.isVisible = false
+//                saveItem?.isVisible = true
+//                setEditTextObserver()
+//            }
+
+
+            /**
+             *
+             * Here when we're in view mode, we check if [args.note?.content] not equal to [notesViewModel.getText()].
+             * If it not equal, it's mean we edited the note and we want to represent the edited note, and not the inital one.
+             * I also added "ifEmpty" check, because initially they are NOT equal, because [notesViewModel.getText()] will return empty string
+             *
+             * **/
             NoteMode.VIEW_MODE -> {
+                Log.d(
+                    TAG, "changeLayoutMode \n" +
+                            " edit text= ${binding.contentEdit.text}\n" +
+                            "viewmodel = ${notesViewModel.getText()}\n" +
+                            "text = ${binding.content.text}\n" +
+                            "args.note.content = ${args.note?.content}"
+                )
+
                 binding.content.visibility = View.VISIBLE
                 binding.contentEdit.visibility = View.GONE
-                binding.content.setText(binding.contentEdit.text)
-                editItem.isVisible = true
-                saveItem.isVisible = false
+                editItem?.isVisible = true
+                saveItem?.isVisible = false
+                binding.content.text =
+                    if (args.note?.content != notesViewModel.getText() && notesViewModel.getText() != "") notesViewModel.getText() else args.note?.content
             }
+
+            NoteMode.EDIT_MODE -> {
+                binding.content.visibility = View.GONE
+                binding.contentEdit.visibility = View.VISIBLE
+                editItem?.isVisible = false
+                saveItem?.isVisible = true
+
+                /**
+                 *
+                 * At the first time we enter the view mode, we have pre-loaded note and we set the regular text to this pre load article content.
+                 * Android by deafult save focusable/visible texts onConfigurationChange, if we enter the edit mode at the first time we still have [binding.content.text] we content.
+                 * When we rotate the screen in edit mode, [binding.content.text] is not visible, hence the value of this fields won't we saved, but the value of [binding.contentEdit.text] will be save by default
+                 *
+                 * [setEditTextObserver] will hold the text from [binding.contentEdit.text]
+                 * **/
+                binding.contentEdit.setText(
+                    if (binding.content.text.isNotEmpty()) {
+                        notesViewModel.setText(binding.content.text.toString())
+                        binding.content.text
+                    } else notesViewModel.getText()
+                )
+                setEditTextObserver()
+            }
+
+
+            NoteMode.CREATE_MODE -> {
+                binding.content.visibility = View.GONE
+                binding.contentEdit.visibility = View.VISIBLE
+                editItem?.isVisible = false
+                saveItem?.isVisible = true
+            }
+//            NoteMode.VIEW_MODE -> {
+//                Log.d(
+//                    TAG, "changeLayoutMode \n" +
+//                            " edit text= ${binding.contentEdit.text}\n" +
+//                            "viewmodel = ${notesViewModel.getText()}\n" +
+//                            "text = ${binding.content.text}\n" +
+//                            "args.note.content = ${args.note?.content}"
+//                )
+//                binding.content.visibility = View.VISIBLE
+//                binding.contentEdit.visibility = View.GONE
+////
+////                binding.content.setText(args.note?.content ?: notesViewModel.getText())
+//                binding.content.text = if (args.note?.content == binding.content.text.toString()  ) notesViewModel.getText() else args.note?.content
+//
+//                editItem?.isVisible = true
+//                saveItem?.isVisible = false
+//            }
+//            NoteMode.EDIT_MODE -> {
+//                Log.d(
+//                    TAG, "changeLayoutMode\n" +
+//                            ": edit text: ${binding.contentEdit.text}\n" +
+//                            "viewmode = ${notesViewModel.getText()}\n" +
+//                            "text = ${binding.content.text}"
+//                )
+//
+//                binding.content.visibility = View.GONE
+//                binding.contentEdit.visibility = View.VISIBLE
+//                binding.contentEdit.setText(if (binding.content.text.isNotEmpty()) binding.content.text.toString() else binding.contentEdit.text.toString())
+//                editItem?.isVisible = false
+//                saveItem?.isVisible = true
+//                setEditTextObserver()
+//            }
         }
+    }
+
+    private fun setEditTextObserver() {
+        binding.contentEdit.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                Log.d(TAG, "afterTextChanged: ")
+                notesViewModel.setText(s.toString())
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            }
+
+        })
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("noteMode", noteMode.ordinal)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        //restore state
     }
 
 

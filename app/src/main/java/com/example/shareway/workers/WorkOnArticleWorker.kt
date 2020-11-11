@@ -28,6 +28,10 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
 
     var articleTitle: String? = null
 
+    var url: String? = null
+    var articlePath: String? = null
+    var articleScheme: String? = null
+
     companion object {
         private const val TAG = "WorkOnArticleWorker"
     }
@@ -36,8 +40,8 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
 
         var websiteName: String? = null
 
-        //full article url e.g www.google.com/some/deep/nav
-        val url = inputData.getString(Constants.URL_KEY)
+        //full article url e.g www.google.com/some/deep/nav - we get this from then intent, pass to viewModel straight to the worker
+         url = inputData.getString(Constants.URL_KEY)
 
         url?.let { websiteName = extractDomainNameFromUri(it) } ?: return Result.failure()
         //don't need check for null, if it was null we already returning Result.failure()
@@ -51,15 +55,16 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
                  * TODO: Run only if there is no category already
                  * **/
 //                val faviconUrl = extractFaviconFromUri(getUrlHost(url) ?: url)
-                val faviconUrl = extractFaviconFromUri(getFullBaseUrl(url)?: url)
+                Log.d(TAG, "doWork: before favicon")
+                val faviconUrl = extractFaviconFromUri(getFullBaseUrl(url!!)?: url!!)
                 Log.d(TAG, "doWork: after favicon")
 
                 //get images for article
-                val image = extractArticleImage(url)
+                val image = extractArticleImage(url!!)
 
 //                fakeDelay(it, url)
-                checkCategoriesAndInsert(it, url, faviconUrl)
-                insertToDB(url, it, faviconUrl)
+                checkCategoriesAndInsert(it, url!!, faviconUrl)
+                insertToDB(url!!, it, faviconUrl)
                 Log.d(TAG, "articleDao hash code: ${articleDao.hashCode()}")
                 Log.d(TAG, "categoryDao hash code: ${categoryDao.hashCode()}")
 
@@ -129,8 +134,8 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
         Log.d(TAG, "extractFaviconFromUri: $element")
         var attr = element.attr("href")
         Log.d(TAG, "extractFaviconFromUri: $attr")
-        
-        
+
+
         checkForArticleTag(doc)
 
 
@@ -288,9 +293,14 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
 //        }
     }
 
+    /**
+     *
+     * Extracting name from given url.
+     * for example www.google.com turn to google.
+     *
+     * **/
     private fun extractDomainNameFromUri(url: String): String? {
         val uriHost = getUrlHost(url) //return www.example.com
-        Log.d(TAG, "extractDomainNameFromUri: $uriHost")
         var websiteName: String? = null
         uriHost?.let { host ->
             websiteName = getWebsiteNameFromUri(host)
@@ -306,12 +316,32 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
      * **/
     private fun getUrlHost(url: String): String? {
         val uri: Uri = url.toUri()
+        Log.d(TAG, "getUrlHost: $uri")  // www.something.com/Mobile/Article/20-21/1,1,1,52549/370975.html
+        Log.d(TAG, "getUrlHost: ${uri.path}") // /Mobile/Article/20-21/1,1,1,52549/370975.html
+        Log.d(TAG, "getUrlHost: ${uri.scheme}") //https/http
+
+        articlePath = uri.path
+        articleScheme = uri.scheme
         return uri.host
     }
 
     //adds protocol to start of url
     private fun getFullBaseUrl(url: String): String? {
-        val base = URL(url)
+        var webUrl = url
+//        val hasTextBeforeUr
+        Log.d(TAG, "getFullBaseUrl: Before $url ")
+        val index = url.indexOf("http")
+        Log.d(TAG, "getFullBaseUrl: index $index")
+        if (index != 0){
+            webUrl = url.substring(index)
+            this.url = webUrl
+        }
+//        val str = url.substring(index)
+//        Log.d(TAG, "getFullBaseUrl: str $str")
+//        val indexAfter= str.indexOf("http")
+//        Log.d(TAG, "getFullBaseUrl: $indexAfter")
+        val base = URL(webUrl)
+        Log.d(TAG, "getFullBaseUrl:  after $base")
         return "${base.protocol}://${base.host}"
     }
 
@@ -324,6 +354,8 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
         val domain = InternetDomainName.from(host).topPrivateDomain().toString()
         Log.d(TAG, "getWebsiteNameFromUri: host $host")
         Log.d(TAG, "getWebsiteNameFromUri: domain $domain")
+        Log.d(TAG, "getWebsiteNameFromUri: cut domain ${domain.substringBefore(".").capitalize()}")
+
 //        val cutString = host.substringAfter(".")
         return try {
             domain.substringBefore(".").capitalize()

@@ -30,7 +30,9 @@
             android:defaultValue="ALL" />
         <action
             android:id="@+id/action_articlesFragment_to_noteFragment"
-            app:destination="@id/noteFragment" />
+            app:destination="@id/noteFragment"
+            app:popEnterAnim="@android:anim/fade_in"
+            app:popExitAnim="@android:anim/fade_out" />
         <action
             android:id="@+id/action_articlesFragment_to_noteListFragment"
             app:destination="@id/noteListFragment" />
@@ -81,6 +83,9 @@
             android:name="note"
             app:argType="com.example.shareway.models.Note"
             app:nullable="true" />
+        <argument
+            android:name="noteMode"
+            app:argType="com.example.shareway.utils.modes.NoteMode" />
     </fragment>
     <fragment
         android:id="@+id/noteListFragment"
@@ -92,6 +97,8 @@
             app:argType="string" />
         <action
             android:id="@+id/action_noteListFragment_to_noteFragment"
-            app:destination="@id/noteFragment" />
+            app:destination="@id/noteFragment"
+            app:popEnterAnim="@android:anim/fade_in"
+            app:popExitAnim="@android:anim/fade_out" />
     </fragment>
 </navigation>

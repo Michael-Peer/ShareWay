@@ -15,8 +15,7 @@ import com.example.shareway.databinding.FragmentNoteListBinding
 import com.example.shareway.listeners.OnNoteClickListener
 import com.example.shareway.listeners.Response
 import com.example.shareway.listeners.UICommunicationListener
-import com.example.shareway.ui.CategoriesFragment
-import com.example.shareway.ui.CategoriesFragmentDirections
+import com.example.shareway.utils.modes.NoteMode
 import com.example.shareway.viewmodels.NoteViewModel
 import com.example.shareway.viewstates.NotesViewState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -118,13 +117,17 @@ class NoteListFragment : Fragment(), OnNoteClickListener {
     }
 
     override fun onNoteClick(position: Int) {
-         val note = noteListRecyclerViewAdapter.getNote(position)
+        val note = noteListRecyclerViewAdapter.getNote(position)
+        Log.d(TAG, "onNoteClick: $position $note")
         note?.let {
-                val action = NoteListFragmentDirections.actionNoteListFragmentToNoteFragment(args.articleURL, it)
-                findNavController().navigate(action)
-            }
-
-           }
+            val action = NoteListFragmentDirections.actionNoteListFragmentToNoteFragment(
+                args.articleURL,
+                it,
+                NoteMode.VIEW_MODE
+            )
+            findNavController().navigate(action)
+        }
+    }
 
 
 }

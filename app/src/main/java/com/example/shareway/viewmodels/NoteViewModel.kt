@@ -4,6 +4,7 @@ import androidx.lifecycle.*
 import com.example.shareway.models.Note
 import com.example.shareway.repositories.ArticleRepository
 import com.example.shareway.utils.UIComponentType
+import com.example.shareway.utils.modes.NoteMode
 import com.example.shareway.viewstates.NotesViewState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -16,11 +17,6 @@ class NoteViewModel constructor(
     private val articleRepository: ArticleRepository
 ) : ViewModel() {
 
-    enum class NoteMode {
-        VIEW_MODE,
-        EDIT_MODE,
-        CREATE_MODE
-    }
 
     private var _noteMode = MutableLiveData<NoteMode>()
     val noteMode: LiveData<NoteMode>
@@ -31,9 +27,19 @@ class NoteViewModel constructor(
     private val _states = MediatorLiveData<NotesViewState>()
     val states: LiveData<NotesViewState> = _states
 
+    private var text: String = ""
+
+
     fun setMode(noteMode: NoteMode) {
         _noteMode.value = noteMode
     }
+
+    fun setText(text: String) {
+        this.text = text
+    }
+
+    fun getText(): String = text
+
 
     fun saveNote(note: Note) {
         viewModelScope.launch {

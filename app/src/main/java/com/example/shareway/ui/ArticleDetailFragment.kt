@@ -667,4 +667,6 @@ class ArticleDetailFragment : Fragment() {
     }
 
 
+
+
 }
