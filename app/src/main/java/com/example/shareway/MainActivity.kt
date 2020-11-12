@@ -1,5 +1,6 @@
 package com.example.shareway
 
+import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
@@ -265,6 +266,10 @@ class MainActivity : AppCompatActivity(), UICommunicationListener {
         fun onTouchOutside(view: View?, event: MotionEvent?)
 
     }
+
+
+
+
 
 
 }

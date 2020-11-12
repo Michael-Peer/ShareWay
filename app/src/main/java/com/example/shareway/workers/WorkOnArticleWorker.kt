@@ -325,7 +325,15 @@ class WorkOnArticleWorker(appContext: Context, workerParameters: WorkerParameter
         return uri.host
     }
 
-    //adds protocol to start of url
+    /**
+     *
+     * adds protocol to start of url - function to add protocol to a given url, which some services need to full address including the protocol.
+     *
+     * I need additional check( see [index] and [substring], because if we're share form other apps and note from the web(for example, Medium app) sometime we're getting "url" like this:
+     * "this is share from other app https://www.someweb.com", so I need to delete what before the protocol.
+     *
+     *
+     * **/
     private fun getFullBaseUrl(url: String): String? {
         var webUrl = url
 //        val hasTextBeforeUr

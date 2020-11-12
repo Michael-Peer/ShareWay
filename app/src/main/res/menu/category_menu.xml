@@ -1,34 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
     <item
         android:id="@+id/filter_menu_search"
         android:title="@string/search"
-        app:showAsAction="always"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
-        />
-
+        app:showAsAction="always" />
     <item
-        android:id="@+id/order"
-        android:icon="@drawable/ic_baseline_filter_list_24"
-        android:title="@string/order_by"
-        app:showAsAction="ifRoom|withText">
+        android:id="@+id/login"
+        android:icon="@drawable/ic_baseline_login_24"
+        android:title="@string/login"
+        app:showAsAction="ifRoom" />
 
-        <menu>
-            <group
-                android:id="@+id/order_group"
-                android:checkableBehavior="single"
-                >
-                <item
-                    android:id="@+id/name"
-                    android:checked="true"
-                    android:title="By Name" />
-                <item
-                    android:id="@+id/date"
-                    android:title="By Date" />
-            </group>
-        </menu>
 
-    </item>
 </menu>

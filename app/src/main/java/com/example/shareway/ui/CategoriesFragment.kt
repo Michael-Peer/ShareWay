@@ -1,6 +1,8 @@
 package com.example.shareway.ui
 
 import android.content.Context
+import android.content.Intent
+import android.content.IntentSender
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -20,8 +22,19 @@ import com.example.shareway.databinding.FragmentCategoriesBinding
 import com.example.shareway.listeners.*
 import com.example.shareway.utils.SpacingItemDecorator
 import com.example.shareway.utils.UIComponentType
+import com.example.shareway.utils.managers.AuthManager
 import com.example.shareway.viewmodels.CategoriesViewModel
 import com.example.shareway.viewstates.CategoriesViewState
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.identity.SignInClient
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -45,6 +58,16 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
 
     lateinit var touchHelper: ItemTouchHelper
 
+    private lateinit var oneTapClient: SignInClient
+    private lateinit var signInRequest: BeginSignInRequest
+
+    private lateinit var auth: FirebaseAuth
+//    private lateinit var googleSignInClient: GoogleSignInClient
+
+
+    private var userDeclinedOneTap = false
+    private val RC_ONE_TAP = 124
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,12 +76,25 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
         (activity as AppCompatActivity?)?.supportActionBar?.show()
 
 
+//        googleSignInClient = GoogleSignIn.getClient(requireContext(), gso)
+
+        auth = Firebase.auth
+        oneTapClient = Identity.getSignInClient(requireContext())
+        signInRequest = AuthManager.buildSignInRequest(
+            isSignIn = false,
+            context = requireContext()
+        )
+
     }
 
     override fun onStart() {
         super.onStart()
-        Log.d(TAG, "onStart: ")
+
+        val currentUser = auth.currentUser
+
+        updateUI(currentUser)
     }
+
 
     override fun onResume() {
         super.onResume()
@@ -211,7 +247,10 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
         Log.d(TAG, "onCategoryClick: position: $position")
         val categoryDomainName = categoryListRecyclerViewAdapter.getCurrentCategory(position)
         categoryDomainName?.let {
-            val action = CategoriesFragmentDirections.actionCategoriesFragmentToArticleFragment(it.originalCategoryName, it.filterMode)
+            val action = CategoriesFragmentDirections.actionCategoriesFragmentToArticleFragment(
+                it.originalCategoryName,
+                it.filterMode
+            )
             findNavController().navigate(action)
         }
 //        Log.d(TAG, "onCategoryClick: position: $position")
@@ -340,7 +379,8 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
                 message = getString(R.string.delete_Category_error),
                 uiComponentType = UIComponentType.Toast
             )
-        )    }
+        )
+    }
 
 
     /**
@@ -390,14 +430,8 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         when (item.itemId) {
-            R.id.name -> {
-                item.isChecked = true
-                categoriesViewModel.getCategoriesByName()
-                return true
-            }
-            R.id.date -> {
-                item.isChecked = true
-                return true
+            R.id.login -> {
+//                startLoginProcess()
             }
         }
 
@@ -405,4 +439,92 @@ class CategoriesFragment : Fragment(), OnCategoryClickListener, OnStartDragListe
     }
 
 
+    private fun updateUI(currentUser: FirebaseUser?) {
+        Log.d(TAG, "updateUI: ")
+        if (currentUser != null) { //there is a user
+            Log.d(TAG, "updateUI: there is user")
+        } else if (!userDeclinedOneTap) { //user NOT declined
+            // Check if the user has saved credentials on our app
+            // and display the One Tap UI
+            Log.d(TAG, "updateUI: thris isn't user")
+            AuthManager.startLoginProcess(
+                oneTapClient = oneTapClient,
+                signInRequest = signInRequest,
+                onSuccess = { result ->
+                    // This listener will be triggered if the
+                    // user does have saved credentials
+                    try {
+                        startIntentSenderForResult(
+                            result.pendingIntent.intentSender, RC_ONE_TAP,
+                            null, 0, 0, 0, null
+                        )
+                    } catch (e: IntentSender.SendIntentException) {
+                        Log.e(
+                            CategoriesFragment.TAG,
+                            "Couldn't start One Tap UI: ${e.localizedMessage}"
+                        )
+                    }
+                },
+                onFailure = {
+                    // No saved credentials found. Launch the One Tap sign-up flow, or
+                    // do nothing and continue presenting the signed-out UI.
+                }
+            )
+        }
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+//            RC_SIGN_IN -> { /* handle google sign in */
+//            }
+            // Result returned from launching the Intent from startIntentSenderForResult(...)
+            RC_ONE_TAP -> {
+                try {
+                    val credential = oneTapClient.getSignInCredentialFromIntent(data)
+                    // This credential contains a googleIdToken which
+                    // we can use to authenticate with FirebaseAuth
+                    credential.googleIdToken?.let {
+                        AuthManager.firebaseAuthWithGoogle(
+                            googleIdToken = it,
+                            auth = auth,
+                            activity = requireActivity(),
+                            onSuccess = { user ->
+                                updateUI(user)
+                            },
+                            onFailure = { e ->
+                                Snackbar.make(
+                                    requireView(),
+                                    "Authentication Failed.",
+                                    Snackbar.LENGTH_SHORT
+                                ).show()
+                                updateUI(null)
+                            }
+                        )
+//                        firebaseAuthWithGoogle(it)
+                    }
+                } catch (e: ApiException) {
+                    when (e.statusCode) {
+                        CommonStatusCodes.CANCELED -> {
+                            // The user closed the dialog
+                            userDeclinedOneTap = true
+                        }
+                        CommonStatusCodes.NETWORK_ERROR -> {
+                            // No Internet connection ?
+                        }
+                        else -> {
+                            // Some other error
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 }
+
+
+
